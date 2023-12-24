@@ -1,9 +1,22 @@
+from api import (
+    add_choices,
+    add_response,
+    api_url,
+    failure,
+    get_choices,
+    get_responses,
+    is_alive,
+    success,
+    top_expected_values,
+    top_param,
+    update_parameters
+)
 import os
 from pathlib import Path
 from shiny import App, reactive, render, ui
 from shiny.types import ImgData
 import shinyswatch
-from ui_cartoons import cartoons, cartoons_ui
+from ui_cartoons import cartoons, cartoons_ui, items
 from ui_intro import intro_ui
 from ui_outro import outro_ui
 
@@ -28,7 +41,7 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):
     
-    # Logic for 'Next' button
+    # Logic for 'Submit' button
     @reactive.Effect
     @reactive.event(input.submit)
     def _():
@@ -48,6 +61,17 @@ def server(input, output, session):
             )
             ui.insert_ui(ui=submit_status, selector="#submit", where="afterEnd")
         else:
+            key1 = cartoons.selected[0]
+            key2 = cartoons.selected[1]
+            if farside_sel_vals[0] is True:
+                add_response(key1)
+                success(key1)
+                failure(key2)
+            else:
+                add_response(key2)
+                success(key2)
+                failure(key1)
+            update_parameters()
             ui.update_navs("hidden_tabs", selected="panel_outro")
     
     # Logic for 'Get Started'

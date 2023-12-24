@@ -1,3 +1,4 @@
+from api import add_choices, get_choices, top_param
 import os
 from pathlib import Path
 import random
@@ -9,12 +10,23 @@ class Cartoons:
 
 cur_dir = Path(__file__).resolve().parent
 cartoons = Cartoons()
-cartoon_fps = [
+items = [
     file for file
     in os.listdir(str(cur_dir / "img"))
     if file != ".DS_Store"
 ]
-cartoons.selected = random.sample(cartoon_fps, 2)
+
+# Add choices to the database if choices don't exist yet
+if not get_choices():
+    choices_json = {
+        "choices": items,
+        "distribution": "beta",
+        "params": {"a": 1, "b": 1, "size": 1}
+    }
+    add_choices(choices_json)
+
+selected = top_param(n=2)
+cartoons.selected = list(selected.keys())
 
 # Cartoons Shiny App UI
 cartoons_ui = ui.nav(

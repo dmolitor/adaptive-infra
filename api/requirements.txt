@@ -1,2 +1,5 @@
 fastapi
+numpy
+psycopg2-binary
+sqlmodel
 uvicorn[standard]
