@@ -1,10 +1,15 @@
 from shiny import ui
 
-outro_ui = ui.nav(
+"""
+This script lays out the UI for the survey landing page.
+"""
+
+outro_ui = ui.nav_panel(
     None,
     ui.row(
         ui.column(3),
-        ui.column(6,
+        ui.column(
+            6,
             ui.div(
                 {
                     "style": (
@@ -14,10 +19,10 @@ outro_ui = ui.nav(
                     )
                 },
                 ui.markdown("**Thank you!**"),
-                "Your response has been recorded"
+                "Your response has been recorded",
             ),
         ),
-        ui.column(3)
+        ui.column(3),
     ),
-    value="panel_outro"
+    value="panel_outro",
 )

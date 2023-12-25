@@ -1,36 +1,28 @@
 import os
 from sqlalchemy import URL
 from sqlmodel import create_engine
-from tables import create_tables
-import time
+from db import create_tables
 
-# Class to store engine for all sessions
+"""
+This script connects to the Postgres database and creates the tables
+initialized in `tables.py`
+"""
 
-# Uncomment this block eventually!!!
-# env_vars = os.environ
-# DB_HOST = env_vars["DB_HOST"]
-# DB_PASS = env_vars["DB_PASS"]
-# DB_PORT = int(env_vars["DB_PORT"])
+env_vars = os.environ
+DB_PASS = env_vars["POSTGRES_PASSWORD"]
+DB_PORT = int(env_vars["POSTGRES_HOST_PORT"])
+DB_USER = env_vars["POSTGRES_USER"]
 
-# engine_url = URL.create(
-#     "postgresql",
-#     username="postgres",
-#     password=DB_PASS,
-#     host=DB_HOST,
-#     port=DB_PORT,
-#     database="postgres"
-# )
-
-# Connect to POSTGRES db
-engine_url = URL.create(
+# Creat the db URL and connect via SQLAlchemy/SQLModel
+url = URL.create(
     "postgresql",
-    username="postgres",
-    password="abc",
-    host="localhost",
-    port=5432,
-    database="postgres"
+    username=DB_USER,
+    password=DB_PASS,
+    host="database",
+    port=DB_PORT,
+    database=DB_USER,
 )
+engine = create_engine(url, echo=False)
 
-time.sleep(10)
-engine = create_engine(engine_url, echo=True)
+# Create the tables initialized in tables.py
 create_tables(engine)
