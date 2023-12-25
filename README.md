@@ -7,12 +7,12 @@ Infrastructure for adaptive learning with surveys and experiments.
 ## Running
 To start the services run:
 ```shell
-docker compose up -d
+docker compose --env-file compose.env up -d
 ```
 
 The app is now accessible at http://localhost:8000.
 
 To shut everything down run:
 ```shell
-docker compose down
+ocker compose --env-file compose.env down
 ```
