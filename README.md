@@ -18,7 +18,7 @@ The following Docker Compose services:
 
 - database:
     This service utilizes the official PostgreSQL Docker image to store
-    all relevant data and user resopnses.
+    all relevant data and user responses.
 
 ## Running
 To start the services run:
