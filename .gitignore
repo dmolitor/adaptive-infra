@@ -166,3 +166,4 @@ renv.lock
 *.Rprofile
 *.Rhistory
 .vscode
+qualtrics/
