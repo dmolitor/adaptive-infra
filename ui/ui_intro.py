@@ -12,7 +12,7 @@ intro_ui = ui.nav_panel(
             6,
             ui.h1(
                 {"style": "text-align: center; font-size: 45px;"},
-                ui.markdown("**Welcome to the Far Side Forecaster**"),
+                ui.markdown("**Welcome to our study!**"),
             ),
             ui.div(
                 {"style": "text-align: center;"},
@@ -22,13 +22,11 @@ intro_ui = ui.nav_panel(
             ui.div(
                 {"style": "text-align: justify; font-size: 20px;"},
                 ui.markdown(
-                    "The Far Side is an iconic, beloved comic strip."
-                    + " However, scientists have long debated, which is the"
-                    + " most-loved Far Side cartoon of all? This survey seeks"
-                    + " to answer this thorny, theoretical query.\n\n"
-                    + "To help us determine the most beloved Far Side of all"
-                    + " time, you will be shown a pair of cartoons. Simply"
-                    + " select the one you like better and submit your answer."
+                    "Thank you so much for participating in this brief survey to improve the understanding of human decision-making."
+                    + "This survey requests personal information limited to age, race, ethnicity, sex, and location."
+                    + "We estimate that this survey should take at most 1.5 minutes to complete."
+                    + "Please read this page carefully and check the box at the bottom of the page if you agree to participate."
+                    + "You must be 18 years old or older to participate."
                 ),
             ),
         ),
