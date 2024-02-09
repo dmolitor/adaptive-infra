@@ -20,7 +20,7 @@ The following Docker Compose services:
     This service utilizes the official PostgreSQL Docker image to store
     all relevant data and user responses.
 
-## Running on Docker
+## Deploying on Docker
 To start the services run:
 ```shell
 docker compose up -d
@@ -33,14 +33,56 @@ To shut everything down run:
 docker compose down
 ```
 
-## Running locally
+## Local Development
 
+### Install dependencies
+Set up and activate Python virtual environment and install requirements:
+```
+pip install -r ./api/requirements.txt
+pip install -r ./ui/requirements.txt
+```
+
+### Run Postgres
 To set up a Postgres db locally run the following in terminal:
 ```
-docker run --name local-postgres -e POSTGRES_PASSWORD=abc -e POSTGRES_USER=adaptive-conjoint -p 5432:5432 -d postgres
+docker run --name local-postgres -e POSTGRES_PASSWORD=Postgres123! -e POSTGRES_USER=postgres -p 5432:5432 -d postgres
 ```
 
 To test that the connection is valid:
 ```
-docker exec local-postgres pg_isready -h localhost -p 5432 -U adaptive-conjoint
+docker exec local-postgres pg_isready -h localhost -p 5432 -U postgres
 ```
+
+### Run API
+Set the following environment variables:
+```
+export PYTHONPATH=$(pwd)/api
+export ADAPTIVE_TESTING=true
+```
+
+Then set up the API with:
+```
+uvicorn api.main:api --port 8000 --env-file .env --reload
+```
+
+Confirm you can access the API by running:
+```
+python -c "import requests as req; print(req.get('http://127.0.0.1:8000').text)"
+```
+
+### Run UI
+Set the following environment variables:
+```
+export PYTHONPATH=$(pwd)/ui
+export ADAPTIVE_TESTING=true
+```
+
+Then run the frontend with:
+```
+uvicorn ui.app:app --port 8080 --env-file .env --reload
+```
+
+Should be accessible at http://127.0.0.1:8080!
+
+### Shut down Postgres database
+Shut down the Postgres db with `docker rm local-postgres -f`.
