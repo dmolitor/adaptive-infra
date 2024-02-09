@@ -45,7 +45,9 @@ pip install -r ./ui/requirements.txt
 ### Run Postgres
 To set up a Postgres db locally run the following in terminal:
 ```
-docker run --name local-postgres -e POSTGRES_PASSWORD=Postgres123! -e POSTGRES_USER=postgres -p 5432:5432 -d postgres
+export POSTGRES_PASSWORD=******
+export POSTGRES_USER=******
+docker run --name local-postgres -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -e POSTGRES_USER=$POSTGRES_USER -p 5432:5432 -d postgres
 ```
 
 To test that the connection is valid:
@@ -58,11 +60,12 @@ Set the following environment variables:
 ```
 export PYTHONPATH=$(pwd)/api
 export ADAPTIVE_TESTING=true
+export POSTGRES_HOST_PORT=5432
 ```
 
 Then set up the API with:
 ```
-uvicorn api.main:api --port 8000 --env-file .env --reload
+uvicorn api.main:api --port 8000 --reload
 ```
 
 Confirm you can access the API by running:
@@ -75,11 +78,12 @@ Set the following environment variables:
 ```
 export PYTHONPATH=$(pwd)/ui
 export ADAPTIVE_TESTING=true
+export API_HOST_PORT=8000
 ```
 
 Then run the frontend with:
 ```
-uvicorn ui.app:app --port 8080 --env-file .env --reload
+uvicorn ui.app:app --port 8080 --reload
 ```
 
 Should be accessible at http://127.0.0.1:8080!
