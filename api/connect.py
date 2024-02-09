@@ -9,6 +9,12 @@ initialized in `tables.py`
 """
 
 env_vars = os.environ
+
+ADAPTIVE_TESTING = env_vars["POSTGRES_PASSWORD"]
+if ADAPTIVE_TESTING:
+    import dotenv
+    dotenv.load_dotenv()
+
 DB_PASS = env_vars["POSTGRES_PASSWORD"]
 DB_PORT = int(env_vars["POSTGRES_HOST_PORT"])
 DB_USER = env_vars["POSTGRES_USER"]

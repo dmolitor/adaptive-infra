@@ -20,7 +20,7 @@ The following Docker Compose services:
     This service utilizes the official PostgreSQL Docker image to store
     all relevant data and user responses.
 
-## Running
+## Running on Docker
 To start the services run:
 ```shell
 docker compose up -d
@@ -31,4 +31,16 @@ The app is now accessible at http://localhost:8000.
 To shut everything down run:
 ```shell
 docker compose down
+```
+
+## Running locally
+
+To set up a Postgres db locally run the following in terminal:
+```
+docker run --name local-postgres -e POSTGRES_PASSWORD=abc -e POSTGRES_USER=adaptive-conjoint -p 5432:5432 -d postgres
+```
+
+To test that the connection is valid:
+```
+docker exec local-postgres pg_isready -h localhost -p 5432 -U adaptive-conjoint
 ```
