@@ -10,21 +10,22 @@ initialized in `tables.py`
 
 env_vars = os.environ
 
-ADAPTIVE_TESTING = env_vars["POSTGRES_PASSWORD"]
-if ADAPTIVE_TESTING:
-    import dotenv
-    dotenv.load_dotenv()
-
-DB_PASS = env_vars["POSTGRES_PASSWORD"]
+ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
+DB_PASS = env_vars["POSTGRES_PASS"]
 DB_PORT = int(env_vars["POSTGRES_HOST_PORT"])
-DB_USER = env_vars["POSTGRES_USER"]
+DB_USER = env_vars["POSTGRES_USER_NAME"]
 
 # Creat the db URL and connect via SQLAlchemy/SQLModel
+if ADAPTIVE_TESTING is not None and ADAPTIVE_TESTING:
+    network = "localhost"
+else:
+    network = "database"
+
 url = URL.create(
     "postgresql",
     username=DB_USER,
     password=DB_PASS,
-    host="database",
+    host=network,
     port=DB_PORT,
     database=DB_USER,
 )

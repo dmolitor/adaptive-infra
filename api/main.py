@@ -27,7 +27,7 @@ api = FastAPI()
 # Base endpoint to check if it's alive.
 @api.get("/")
 def root():
-    return None
+    return "Hello World!"
 
 
 # Endpoint to retrieve all the responses
