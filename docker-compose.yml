@@ -7,8 +7,8 @@ services:
     environment:
       API_CONTAINER_PORT: "${API_CONTAINER_PORT}"
       POSTGRES_HOST_PORT: "${POSTGRES_HOST_PORT}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASS}"
-      POSTGRES_USER: "${POSTGRES_USER_NAME}"
+      POSTGRES_PASS: "${POSTGRES_PASS}"
+      POSTGRES_USER_NAME: "${POSTGRES_USER_NAME}"
     depends_on:
       database:
         condition: service_healthy
