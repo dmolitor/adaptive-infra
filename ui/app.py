@@ -84,9 +84,17 @@ def server(input, output, session):
             # Once parameters are updated, usher the user to the outro page.
             ui.update_navs("hidden_tabs", selected="panel_outro")
 
+    # @reactive.Effect
+    # @reactive.event(input.consent)
+    # def _():
+
+
     # Logic for the 'Get Started' button
+    # name button something distinct to each ui element
+    
+    # create helper function that does all the steps (that's like next_page)
     @reactive.Effect
-    @reactive.event(input.next_page)
+    @reactive.event(input.next_page_prolific_screening)
     def _():   
         # # Have the user select between the cartoons with the two highest random
         # # draws from their parameter distributions.

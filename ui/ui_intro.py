@@ -38,9 +38,9 @@ intro_ui = ui.nav_panel(
         ui.column(3),
     ),
     ui.row(
-        ui.column(5),
+        ui.column(3),
         ui.column(
-            5,
+            6,
             ui.div(
                 ui.input_radio_buttons(
                     "consent",
@@ -50,14 +50,19 @@ intro_ui = ui.nav_panel(
                         0: "I do not consent to participate",
                     }
             ),
-            ui.column(4),
+        ),
+        ),
+        ui.column(3),
+    ),
+    ui.row(
+        ui.column(3),
+        ui.column(6,
             ui.div(
                 {"style": "text-align: center;"},
-                ui.input_action_button("next_page", "Next page"),
+                ui.input_action_button("next_page_prolific_screening", "Next page"),
             ),
         ),
-        ui.column(5),
+        ui.column(3),
     ),
-    ui.br(),
-),
+    ui.br()
 )
