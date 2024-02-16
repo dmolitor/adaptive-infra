@@ -5,6 +5,7 @@ import shinyswatch
 from ui_cartoons import cartoons_ui, selected
 from ui_intro import intro_ui
 from ui_outro import outro_ui
+from ui_page2 import prolific_q_ui
 
 """
 This script lays out the UI and the logic for the majority of the front-facing
@@ -27,6 +28,7 @@ app_ui = ui.page_fluid(
         intro_ui,
         # Cartoon Display
         cartoons_ui,
+        prolific_q_ui,
         # Goodbye Page
         outro_ui,
         id="hidden_tabs",
@@ -84,13 +86,14 @@ def server(input, output, session):
 
     # Logic for the 'Get Started' button
     @reactive.Effect
-    @reactive.event(input.get_started)
-    def _():
-        # Have the user select between the cartoons with the two highest random
-        # draws from their parameter distributions.
+    @reactive.event(input.next_page)
+    def _():   
+        # # Have the user select between the cartoons with the two highest random
+        # # draws from their parameter distributions.
         selected = list(top_param(n=2).keys())
-        # Now that cartoons have been selected, switch to the comparison tab
-        ui.update_navs("hidden_tabs", selected="panel_cartoon")
+        # # Now that cartoons have been selected, switch to the comparison tab
+        #ui.update_navs("hidden_tabs", selected="panel_cartoon")
+        ui.update_navs("hidden_tabs", selected="panel_prolific_q")
         # Update the selection options with the new cartoons
         ui.update_action_button(
             id="farside1", label="", icon=ui.img(src=selected[0], height="500px")
