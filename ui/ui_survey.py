@@ -28,31 +28,27 @@ if not get_choices():
 selected = list(top_param(n=2).keys())
 
 # UI for the cartoon selection page
-cartoons_ui = ui.nav_panel(
+survey_ui = ui.nav_panel(
     None,
+    ui.row(
+        ui.column(3),
+        ui.column(6,
+                  ui.HTML('Imagine you are voting in a primary contest for governor. You will be asked to choose between two candidates, who are both of the party you prefer.'),
+                  ),
+                  ui.column(3),
+    ),
+    ui.br(),
     # Cartoons (as clickable buttons)
     ui.row(
-        ui.column(2),
+        ui.column(3),
         # Make the two cartoons be clickable image buttons
-        ui.column(
-            4,
-            ui.div(
-                {"style": "text-align: center;"},
-                ui.input_action_button(
-                    "farside1", "", icon=ui.img(src=selected[0], height="500px")
+            ui.column(
+                6,
+                ui.div(
+                    ui.HTML("<table><tbody><tr><th></th><th>Candidate 1</th><th>Candidate 2</th></tr><tr><td>Name</td><td>First Name</td><td>First Name<br></td></tr><tr><td>Ages</td><td>Age 1<br></td><td>Age 2<br></td></tr><tr><td>Political experience</td><td>Pol Experience 1</td><td>Pol Experience 2</td></tr><tr><td>Career experience</td><td>Career 1</td><td>Career 2</td></tr></tbody></table><br>Which of these two candidates do you prefer?<br>"),
                 ),
             ),
-        ),
-        ui.column(
-            4,
-            ui.div(
-                {"style": "text-align: center;"},
-                ui.input_action_button(
-                    "farside2", "", icon=ui.img(src=selected[1], height="500px")
-                ),
-            ),
-        ),
-        ui.column(2),
+        ui.column(3),
     ),
     # Add select boxes below the cartoon images
     ui.row(
@@ -60,14 +56,14 @@ cartoons_ui = ui.nav_panel(
         ui.column(
             2,
             ui.div(
-                {"style": "text-align: center;"}, ui.input_checkbox("farside1_sel", "")
+                {"style": "text-align: center;"}, ui.input_checkbox("farside1_sel", "Candidate 1")
             ),
         ),
         ui.column(2),
         ui.column(
             2,
             ui.div(
-                {"style": "text-align: center;"}, ui.input_checkbox("farside2_sel", "")
+                {"style": "text-align: center;"}, ui.input_checkbox("farside2_sel", "Candidate 2")
             ),
         ),
         ui.column(3),
@@ -79,10 +75,10 @@ cartoons_ui = ui.nav_panel(
             2,
             ui.div(
                 {"style": "text-align: center;"},
-                ui.input_action_button("submit", "Submit", width="100%"),
+                ui.input_action_button("submit", "Next page", width="100%"),
             ),
         ),
         ui.column(5),
     ),
-    value="panel_cartoon",
+    value="panel_survey",
 )

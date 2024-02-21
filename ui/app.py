@@ -2,10 +2,10 @@ from api import add_response, failure, success, top_param, update_parameters
 from pathlib import Path
 from shiny import App, reactive, ui
 import shinyswatch
-from ui_cartoons import cartoons_ui, selected
+from ui_survey import survey_ui, selected
 from ui_intro import intro_ui
 from ui_outro import outro_ui
-from ui_page2 import prolific_q_ui
+from ui_pages import screening_questions
 
 """
 This script lays out the UI and the logic for the majority of the front-facing
@@ -17,6 +17,11 @@ respectively.
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
 
+# load css
+ui.include_css(
+    Path(__file__).parent / "table-styles.css"
+)
+
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
     shinyswatch.theme.simplex(),
@@ -26,8 +31,8 @@ app_ui = ui.page_fluid(
         # Intro Page
         intro_ui,
         # Cartoon Display
-        cartoons_ui,
-        prolific_q_ui,
+        survey_ui,
+        screening_questions,
         # Goodbye Page
         outro_ui,
         id="hidden_tabs",
@@ -83,9 +88,17 @@ def server(input, output, session):
             # Once parameters are updated, usher the user to the outro page.
             ui.update_navs("hidden_tabs", selected="panel_outro")
 
+    # @reactive.Effect
+    # @reactive.event(input.consent)
+    # def _():
+
+
     # Logic for the 'Get Started' button
+    # name button something distinct to each ui element
+    
+    # create helper function that does all the steps (that's like next_page)
     @reactive.Effect
-    @reactive.event(input.next_page)
+    @reactive.event(input.next_page_prolific_screening)
     def _():   
         # # Have the user select between the cartoons with the two highest random
         # # draws from their parameter distributions.
@@ -100,6 +113,13 @@ def server(input, output, session):
         ui.update_action_button(
             id="farside2", label="", icon=ui.img(src=selected[1], height="500px")
         )
+
+    @reactive.Effect
+    @reactive.event(input.next_page_survey)
+    def _():   
+        # # Now that cartoons have been selected, switch to the comparison tab
+        ui.update_navs("hidden_tabs", selected="panel_survey")
+
 
     # Logic for selecting cartoon checkboxes
     @reactive.Effect

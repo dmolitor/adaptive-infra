@@ -102,7 +102,7 @@ intro_ui = ui.nav_panel(
         ui.column(2)
     ),
     ui.row(
-        ui.column(5),
+        ui.column(3),
         ui.column(
             3,
             ui.input_radio_buttons(
@@ -122,10 +122,11 @@ intro_ui = ui.nav_panel(
             8,
             ui.div(
                 {"style": "text-align: right;"},
-                ui.input_action_button("next_page", "Next page \u27A4"),
+                ui.input_action_button("next_page_prolific_screening", "Next page \u27A4"),
             )
         ),
         ui.column(2)
     ),
+    ui.br()
     ui.br()
 )
