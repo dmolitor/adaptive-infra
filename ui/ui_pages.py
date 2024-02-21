@@ -9,10 +9,15 @@ screening_questions = ui.nav_panel(
     ui.row(
         ui.column(3),
         ui.column(6,
-        ui.input_text('prolific_id',
-                      'What is your Prolific ID? Please note that this response should auto-fill with the correct ID.',
-                      width='100%'),
-                      ui.output_text_verbatim("value"),
+            ui.input_text(
+                id="prolific_id",
+                label=(
+                    "What is your Prolific ID? Please note that this response "
+                    + "should auto-fill with the correct ID."
+                ),
+                value="",
+                width="100%"
+            )
         ),
         ui.column(3),
     ),
