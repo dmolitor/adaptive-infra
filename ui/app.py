@@ -19,10 +19,9 @@ cur_dir = Path(__file__).resolve().parent
 
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
-    shinyswatch.theme.solar(),
+    shinyswatch.theme.simplex(),
     ui.br(),
-    ui.panel_title(ui.markdown("**Far Side Forecaster**"), "Far Side Forecaster"),
-    ui.hr(),
+    ui.panel_title(ui.img(src="cornell-reduced-red.svg", height="45px")),
     ui.navset_hidden(
         # Intro Page
         intro_ui,
@@ -132,4 +131,4 @@ def server(input, output, session):
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image
 # filepaths.
-app = App(app_ui, server, static_assets=str(cur_dir / "img"))
+app = App(app_ui, server, static_assets=str(cur_dir.parent / "assets"))
