@@ -4,6 +4,7 @@ from shiny import App, reactive, ui
 import shinyswatch
 from ui_survey import survey_ui, selected
 from ui_intro import intro_ui
+from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
 from ui_pages import screening_questions
 
@@ -35,6 +36,8 @@ app_ui = ui.page_fluid(
         screening_questions,
         # Goodbye Page
         outro_ui,
+        # No consent page
+        no_consent_ui,
         id="hidden_tabs",
     ),
 )
@@ -100,19 +103,14 @@ def server(input, output, session):
     @reactive.Effect
     @reactive.event(input.next_page_prolific_screening)
     def _():   
-        # # Have the user select between the cartoons with the two highest random
-        # # draws from their parameter distributions.
-        selected = list(top_param(n=2).keys())
-        # # Now that cartoons have been selected, switch to the comparison tab
-        #ui.update_navs("hidden_tabs", selected="panel_cartoon")
-        ui.update_navs("hidden_tabs", selected="panel_prolific_q")
-        # Update the selection options with the new cartoons
-        ui.update_action_button(
-            id="farside1", label="", icon=ui.img(src=selected[0], height="500px")
-        )
-        ui.update_action_button(
-            id="farside2", label="", icon=ui.img(src=selected[1], height="500px")
-        )
+        # Get the consent value; either 'consent_agree' or 'consent_disagree'
+        sel_value = input.consent()
+        # If 'consent_agree' proceed with the survey
+        if sel_value == "consent_agree":
+            ui.update_navs("hidden_tabs", selected="panel_prolific_q")
+        # Otherwise, exit the interview
+        else:
+            ui.update_navs("hidden_tabs", selected="panel_no_consent")
 
     @reactive.Effect
     @reactive.event(input.next_page_survey)
