@@ -7,9 +7,9 @@ This script lays out the UI for the "I don't consent" landing page.
 no_consent_ui = ui.nav_panel(
     None,
     ui.row(
-        ui.column(2),
+        ui.column(3),
         ui.column(
-            8,
+            6,
             ui.div(
                 {
                     "style": "text-align: center;"
@@ -25,7 +25,7 @@ no_consent_ui = ui.nav_panel(
                 )
             ),
         ),
-        ui.column(2),
+        ui.column(3),
     ),
     value="panel_no_consent",
 )
