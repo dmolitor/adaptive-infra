@@ -102,7 +102,7 @@ intro_ui = ui.nav_panel(
         ui.column(2)
     ),
     ui.row(
-        ui.column(3),
+        ui.column(5),
         ui.column(
             3,
             ui.input_radio_buttons(
@@ -127,6 +127,5 @@ intro_ui = ui.nav_panel(
         ),
         ui.column(2)
     ),
-    ui.br()
     ui.br()
 )
