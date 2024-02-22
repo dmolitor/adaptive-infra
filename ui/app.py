@@ -78,8 +78,6 @@ def server(input: Inputs, output: Outputs, session: Session):
     def _():
         ui.update_navs("hidden_tabs", selected="panel_postsurvey")
 
-
-
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image
 # filepaths.
