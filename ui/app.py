@@ -6,6 +6,7 @@ from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
 from ui_pages import screening_questions
+from ui_postsurvey import postsurvey_ui
 from utils import get_prolific_id
 
 """
@@ -17,11 +18,6 @@ respectively.
 
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
-
-# load css
-ui.include_css(
-    cur_dir / "table-styles.css"
-)
 
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
@@ -36,6 +32,7 @@ app_ui = ui.page_fluid(
         screening_questions,
         outro_ui,
         no_consent_ui,
+        postsurvey_ui,
         id="hidden_tabs"
     )
 )
@@ -67,9 +64,11 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_no_consent")
 
     @reactive.Effect
-    @reactive.event(input.next_page_survey)
+    @reactive.event(input.next_page_postsurvey)
     def _():
-        ui.update_navs("hidden_tabs", selected="panel_survey")
+        ui.update_navs("hidden_tabs", selected="panel_postsurvey")
+
+
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image
