@@ -75,7 +75,7 @@ survey_ui = ui.nav_panel(
             2,
             ui.div(
                 {"style": "text-align: center;"},
-                ui.input_action_button("submit", "Next page", width="100%"),
+                ui.input_action_button("next_page_attention", "Next page", width="100%"),
             ),
         ),
         ui.column(5),

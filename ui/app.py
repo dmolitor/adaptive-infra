@@ -6,7 +6,7 @@ from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
 from ui_pages import screening_questions
-from ui_postsurvey import postsurvey_ui
+from ui_postsurvey import postsurvey_ui, attention_ui
 from utils import get_prolific_id
 
 """
@@ -32,12 +32,13 @@ app_ui = ui.page_fluid(
     # Cornell Logo on each page
     ui.panel_title(ui.img(src="cornell-reduced-red.svg", height="45px")),
     ui.navset_hidden(
+        postsurvey_ui,
+        attention_ui,
         intro_ui,
         survey_ui,
         screening_questions,
         outro_ui,
         no_consent_ui,
-        postsurvey_ui,
         id="hidden_tabs"
     )
 )
@@ -74,9 +75,19 @@ def server(input: Inputs, output: Outputs, session: Session):
         ui.update_navs("hidden_tabs", selected="panel_survey")
 
     @reactive.Effect
+    @reactive.event(input.next_page_attention)
+    def _():
+        ui.update_navs("hidden_tabs", selected="panel_attention")
+
+    @reactive.Effect
     @reactive.event(input.next_page_postsurvey)
     def _():
         ui.update_navs("hidden_tabs", selected="panel_postsurvey")
+
+    @reactive.Effect
+    @reactive.event(input.next_page_end)
+    def _():
+        ui.update_navs("hidden_tabs", selected="panel_outro")
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image
