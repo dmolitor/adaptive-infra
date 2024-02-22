@@ -32,13 +32,13 @@ app_ui = ui.page_fluid(
     # Cornell Logo on each page
     ui.panel_title(ui.img(src="cornell-reduced-red.svg", height="45px")),
     ui.navset_hidden(
-        postsurvey_ui,
-        attention_ui,
         intro_ui,
         survey_ui,
         screening_questions,
         outro_ui,
         no_consent_ui,
+        attention_ui,
+        postsurvey_ui,
         id="hidden_tabs"
     )
 )
