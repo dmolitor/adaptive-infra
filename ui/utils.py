@@ -1,5 +1,27 @@
-from shiny import Session
+from shiny import Session, ui
 from urllib.parse import urlparse, parse_qs
+
+def error(
+        id: str,
+        selector: str,
+        message: str = "Please select exactly one option!",
+        where: str = "afterEnd"
+    ):
+    ui.remove_ui(selector=f"#{id}")
+    status = ui.help_text(
+        ui.span(
+            {"style": "color:red; text-align: center;"},
+            message
+        ),
+        id=id
+    )
+    ui.insert_ui(ui=status, selector=selector, where=where)
+
+def error_clear(id: str | list[str]):
+    if not isinstance(id, list):
+        id = [id]
+    for i in id:
+        ui.remove_ui(selector=f"#{i}")
 
 def get_prolific_id(session: Session) -> str | None:
     url = session.input[".clientdata_url_search"]()
