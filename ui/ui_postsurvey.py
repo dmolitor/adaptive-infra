@@ -6,7 +6,7 @@ This script lays out the UI for the cartoon comparison page. It also does a
 bit of data prep via the API to ensure the database is storing essential data.
 """
 
-# Set file paths relative to ui_cartoons.py instead of being absolute
+# Set file paths relative to current file
 cur_dir = Path(__file__).resolve().parent
 
 # UI for the cartoon selection page
@@ -15,13 +15,14 @@ attention_ui = ui.nav_panel(
     ui.row(
         ui.column(3),
         ui.column(6,
-        ui.input_radio_buttons(
-            'attention1',
-            ui.HTML('Which candidate was older?'),
-            {0: 'Candidate 1',
-             1: 'Candidate 2',
-             2: "I don't know"},
-             width='100%'),
+            ui.input_radio_buttons(
+                'attention1',
+                ui.HTML('Which candidate was older?'),
+                {0: 'Candidate 1',
+                1: 'Candidate 2',
+                2: "I don't know"},
+                width='100%'
+            )
         ),
         ui.column(3),
     ),
@@ -33,7 +34,7 @@ attention_ui = ui.nav_panel(
             ui.div(
                 {"style": "text-align: center;"},
                 ui.input_action_button("next_page_postsurvey", "Next page \u27A4"),
-            ),
+            )
         ),
         ui.column(5),
     ),
@@ -44,12 +45,13 @@ postsurvey_ui = ui.nav_panel(
     None,
     ui.row(
         ui.column(3),
-        ui.column(6,
-                  {"style": "text-align: justify; font-size: 20px;"},
-                  ui.div(
-                      ui.HTML('This section has the purpose of collecting information on age, race, ethnicity, and sex. This will allow us to contextualize our results. It is important to us that you answer these questions honestly.')
-                        )
-                    ),
+        ui.column(
+            6,
+            {"style": "text-align: justify; font-size: 20px;"},
+            ui.div(
+                ui.HTML('This section has the purpose of collecting information on age, race, ethnicity, and sex. This will allow us to contextualize our results. It is important to us that you answer these questions honestly.')
+            )
+        ),
         ui.column(3),
     ),
     ui.br(),
@@ -72,27 +74,21 @@ postsurvey_ui = ui.nav_panel(
     ui.row(
         ui.column(3),
         ui.column(6,
-            ui.div(
-                ui.HTML('What is your race? Check all that apply.')
-            ),
-            ui.div(
-            ui.input_checkbox('race_aian', 'American Indian or Alaska Native', False),
-            ui.output_ui("race_aian_value"),
-            ui.input_checkbox('race_asian', 'Asian', False),
-            ui.output_ui("race_asian_value"),
-            ui.input_checkbox('race_black', 'Black or African American', False),
-            ui.output_ui("race_black_value"),
-            ui.input_checkbox('race_nhpi', 'Native Hawaiian or Pacific Islander', False),
-            ui.output_ui("race_nhpi_value"),
-            ui.input_checkbox('race_white', 'White', False),
-            ui.output_ui("race_white_value"),
-            ui.input_checkbox('race_other', 'Other', False),
-            ui.output_ui("race_other_value"),
-            ui.input_checkbox('race_skip', 'Prefer not to disclose', False),
-            ui.output_ui("race_skip_value"),
+            ui.input_checkbox_group(
+                id="race",
+                label=ui.HTML("What is your race? Check all that apply."),
+                choices={
+                    "race_aian": "American Indian or Alaska Native",
+                    "race_asian": "Asian",
+                    "race_black": "Black or African American",
+                    "race_nhpi": "Native Hawaiian or Pacific Islander",
+                    "race_white": "White",
+                    "race_other": "Other",
+                    "race_skip": "Prefer not to disclose"
+                }
+            )
         ),
-    ),
-    ui.column(3),
+        ui.column(3),
     ),
     ui.br(),
     ui.row(
@@ -132,5 +128,6 @@ postsurvey_ui = ui.nav_panel(
         ),
         ui.column(5),
     ),
+    ui.br(),
     value="panel_postsurvey",
 )
