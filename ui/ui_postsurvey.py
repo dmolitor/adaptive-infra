@@ -58,16 +58,14 @@ postsurvey_ui = ui.nav_panel(
     ui.row(
         ui.column(3),
         ui.column(6,
-            ui.input_radio_buttons('demo1',
-                        ui.HTML('What is your age?'),
-                        {'age_response': ui.div(ui.input_text('age',
-                                                       "",
-                                                       ""),
-                                                       ui.output_text_verbatim('age'),
-                                                       width='100%'),
-                         'skip': 'Prefer not to disclose'}),
+                  ui.HTML('What is your age?'),
+                  ui.div(ui.input_text('age',"",""),
+                         ui.output_text_verbatim('age')),
+                         ui.input_radio_buttons('demo1',
+                                                '',
+                                                {'skip': 'Prefer not to disclose'},
+                                                selected='None')),
                         
-        ),
         ui.column(3),
     ),
     ui.br(),
@@ -85,7 +83,8 @@ postsurvey_ui = ui.nav_panel(
                     "race_white": "White",
                     "race_other": "Other",
                     "race_skip": "Prefer not to disclose"
-                }
+                },
+                selected='None'
             )
         ),
         ui.column(3),
@@ -99,6 +98,7 @@ postsurvey_ui = ui.nav_panel(
                                          {0: 'No',
                                           1: 'Yes',
                                           2: 'Prefer not to disclose'},
+                                          selected='None'
                   )
         ),
         ui.column(3),
@@ -112,6 +112,7 @@ postsurvey_ui = ui.nav_panel(
                                          {0: 'Female',
                                           1: 'Male',
                                           2: 'Prefer not to disclose'},
+                                          selected='None'
                   )
         ),
         ui.column(3),
