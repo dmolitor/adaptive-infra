@@ -5,9 +5,9 @@ from ui_survey import survey_ui
 from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
-from ui_pages import screening_questions
+from ui_consent import screening_questions
 from ui_postsurvey import postsurvey_ui, attention_ui
-from utils import get_prolific_id
+from utils import error, error_clear, get_prolific_id
 
 """
 This script lays out the UI and the logic for the majority of the front-facing
@@ -44,11 +44,21 @@ def server(input: Inputs, output: Outputs, session: Session):
     # Logic for 'Next Page' button on landing page
     @reactive.Effect
     @reactive.event(input.next_page_prolific_screening)
-    def _():   
-        # Get the consent value; either 'consent_agree' or 'consent_disagree'
-        sel_value = input.consent()
-        # If 'consent_agree' proceed with the survey
-        if sel_value == "consent_agree":
+    def _():
+        # Grab consent value
+        consent = input.consent()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(id="consent_status")
+        # If neither button is selected, don't let user proceed
+        if consent not in ["consent_agree", "consent_disagree"]:
+            error(
+                id="consent_status",
+                selector="#consent",
+                message="This field is required",
+                where="beforeEnd"
+            )
+        # If they consent, proceed
+        elif consent == "consent_agree":
             # Autofill the 'Prolific ID' text entry
             ui.update_text(
                 id="prolific_id",
@@ -60,19 +70,83 @@ def server(input: Inputs, output: Outputs, session: Session):
             )
             # Switch tabs to the Prolific questions tab
             ui.update_navs("hidden_tabs", selected="panel_prolific_q")
-        # Otherwise, exit the interview
+        # Otherwise, bring them to the exit page
         else:
             ui.update_navs("hidden_tabs", selected="panel_no_consent")
-
+    
+    # Logic for 'Next Page' on the consent page
     @reactive.Effect
     @reactive.event(input.next_page_survey)
     def _():
-        ui.update_navs("hidden_tabs", selected="panel_survey")
-
+        # Grab the following values: captcha, prolific_id, location, commitment
+        captcha = input.captcha()
+        prolific_id = input.prolific_id()
+        location = input.location()
+        commitment = input.commitment()
+        # Are we ready to proceed?
+        proceed = True
+        # Clear all errors (there may be none; that's fine)
+        error_clear(
+            id=["captcha_status",
+                "prolific_id_status",
+                "location_status",
+                "commitment_status"]
+        )
+        # Ensure prolific ID has been entered
+        if prolific_id == "" or prolific_id is None:
+            error(
+                id="prolific_id_status",
+                selector="#prolific_id",
+                message="* This field is required"
+            )
+            proceed = False
+        # Ensure location has been entered
+        if location not in ["0", "1"]:
+            error(
+                id="location_status",
+                selector="#location",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            proceed = False
+        # Ensure commitment has been entered
+        if commitment not in ["0", "1", "2"]:
+            error(
+                id="commitment_status",
+                selector="#commitment",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            proceed = False
+        # Ensure captcha value is entered
+        if captcha == "" or captcha is None:
+            error(
+                id="captcha_status",
+                selector="#captcha",
+                message="* This field is required"
+            )
+            proceed = False
+        if proceed:
+            ui.update_navs("hidden_tabs", selected="panel_survey")
+    
+    # Logic for 'Next Page' on the primary survey page
     @reactive.Effect
     @reactive.event(input.next_page_attention)
     def _():
-        ui.update_navs("hidden_tabs", selected="panel_attention")
+        # Grab the following values: candidate
+        candidate = input.candidate()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(id="candidate_status")
+        # Ensure candidate choice has been selected
+        if candidate not in ["0", "1"]:
+            error(
+                id="candidate_status",
+                selector="#candidate",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+        else:
+            ui.update_navs("hidden_tabs", selected="panel_attention")
 
     @reactive.Effect
     @reactive.event(input.next_page_postsurvey)
