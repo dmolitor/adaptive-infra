@@ -28,7 +28,7 @@ if not get_choices():
 # All the cartoon parameters start with an uninformative prior Beta(1, 1)
 selected = list(top_param(n=2).keys())
 
-# UI for the cartoon selection page
+# UI for the survey questions
 survey_ui = ui.nav_panel(
     ui.head_content(ui.include_css("table-styles.css")),
     None,
@@ -40,7 +40,7 @@ survey_ui = ui.nav_panel(
                   ui.column(3),
     ),
     ui.br(),
-    # Cartoons (as clickable buttons)
+    # Survey tables
     ui.row(
         ui.column(3),
         # Make the two cartoons be clickable image buttons
@@ -52,7 +52,7 @@ survey_ui = ui.nav_panel(
             ),
         ui.column(3),
     ),
-    # Add select boxes below the cartoon images
+    # Add select boxes below the survey tables
     ui.row(
         ui.column(3),
         ui.column(
