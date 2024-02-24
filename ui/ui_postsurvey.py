@@ -83,8 +83,7 @@ postsurvey_ui = ui.nav_panel(
                     "race_white": "White",
                     "race_other": "Other",
                     "race_skip": "Prefer not to disclose"
-                },
-                selected='None'
+                }
             )
         ),
         ui.column(3),
@@ -98,7 +97,6 @@ postsurvey_ui = ui.nav_panel(
                                          {0: 'No',
                                           1: 'Yes',
                                           2: 'Prefer not to disclose'},
-                                          selected='None'
                   )
         ),
         ui.column(3),
@@ -112,7 +110,6 @@ postsurvey_ui = ui.nav_panel(
                                          {0: 'Female',
                                           1: 'Male',
                                           2: 'Prefer not to disclose'},
-                                          selected='None'
                   )
         ),
         ui.column(3),
