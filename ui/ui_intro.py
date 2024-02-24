@@ -111,7 +111,8 @@ intro_ui = ui.nav_panel(
                 choices={
                     "consent_agree": "I consent to participate",
                     "consent_disagree": "I do not consent to participate",
-                }, width="100%"
+                }, width="100%",
+                selected="None"
             )
         ),
         ui.column(4)

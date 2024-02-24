@@ -30,7 +30,8 @@ screening_questions = ui.nav_panel(
             'Are you located in the U.S.?',
             {1: 'Yes',
              0: 'No'},
-             width='100%')
+             width='100%',
+             selected='None')
         ),
         ui.column(3),
     ),
@@ -44,7 +45,8 @@ screening_questions = ui.nav_panel(
             {1: 'Yes, I will',
              2: "I can't promise either way",
              0: 'No, I will not'},
-             width='100%')
+             width='100%',
+             selected='None')
         ),
         ui.column(3),
     ),
