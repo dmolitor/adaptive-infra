@@ -19,11 +19,6 @@ respectively.
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
 
-# load css
-ui.include_css(
-    cur_dir / "table-styles.css"
-)
-
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
     # Bootswatch Simplex theme: browse themes here [https://bootswatch.com/]

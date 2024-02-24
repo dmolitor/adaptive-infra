@@ -2,6 +2,7 @@ from api import add_choices, get_choices, top_param
 import os
 from pathlib import Path
 from shiny import ui
+from htmltools import head_content
 
 """
 This script lays out the UI for the cartoon comparison page. It also does a
@@ -29,6 +30,7 @@ selected = list(top_param(n=2).keys())
 
 # UI for the cartoon selection page
 survey_ui = ui.nav_panel(
+    ui.head_content(ui.include_css("table-styles.css")),
     None,
     ui.row(
         ui.column(3),
