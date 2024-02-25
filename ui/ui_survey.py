@@ -14,13 +14,12 @@ cur_dir = Path(__file__).resolve().parent
 
 # UI for the survey questions
 survey_ui = ui.nav_panel(
-    ui.head_content(ui.include_css("table-styles.css")),
     None,
     ui.row(
         ui.column(3),
         ui.column(6,
             ui.div(
-                {"style": "font-size: 20px; text-align: justify;"},
+                {"style": "text-align: justify;"},
                 ui.HTML(
                     "Imagine you are voting in a primary contest for "
                     + "governor. You will be asked to choose between two "
@@ -47,7 +46,7 @@ survey_ui = ui.nav_panel(
                         + "<td>Pol Experience 1</td><td>Pol Experience 2</td>"
                         + "</tr><tr><td>Career experience</td>"
                         + "<td>Career 1</td><td>Career 2</td></tr>"
-                        + "</tbody></table><br>"
+                        + "</tbody></table>"
                     ),
                 ),
             ),

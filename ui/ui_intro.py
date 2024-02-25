@@ -16,7 +16,7 @@ intro_ui = ui.nav_panel(
             ),
             ui.br(),
             ui.div(
-                {"style": "text-align: justify; font-size: 20px;"},
+                {"style": "text-align: justify;"},
                 ui.markdown(
                     "Thank you so much for participating in this brief survey"
                     + " to improve the understanding of human "
