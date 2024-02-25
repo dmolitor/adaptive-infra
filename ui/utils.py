@@ -32,5 +32,44 @@ def get_prolific_id(session: Session) -> str | None:
     # 'Unbox' single item lists
     query_dict = {k: v[0] if len(v) == 1 else v for k, v in query_dict.items()}
     # Get the Prolific ID
-    prolific_id = query_dict.get("prolific_id")
+    prolific_id = (
+        query_dict
+        .get("PROLIFIC_PID")
+        .replace("{{", "")
+        .replace("}}", "")
+    )
     return prolific_id
+
+scroll_top = ui.tags.script(
+    """
+    Shiny.addCustomMessageHandler('scroll_top', function(message) {
+      window.scrollTo(0, 0);
+    });
+    """
+)
+
+scroll_bottom = ui.tags.script(
+    """
+    Shiny.addCustomMessageHandler('scroll_bottom', function(message) {
+      setTimeout(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      }, 0);
+    });
+    """
+)
+
+def validate_age(age: tuple[str]) -> bool:
+    if age == ():
+        return False
+    return True
+
+def validate_race(race: tuple[str]) -> bool:
+    if race == ():
+        return False
+    else:
+        for r in race:
+            if not r.startswith("race_"):
+                return False
+        if len(race) > 1 and "race_skip" in race:
+            return False
+    return True
