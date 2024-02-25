@@ -1,55 +1,62 @@
 from pathlib import Path
 from shiny import ui
 
-"""
-This script lays out the UI for the cartoon comparison page. It also does a
-bit of data prep via the API to ensure the database is storing essential data.
-"""
-
 # Set file paths relative to current file
 cur_dir = Path(__file__).resolve().parent
 
-# UI for the cartoon selection page
+# UI for the candidate attention check
 attention_ui = ui.nav_panel(
     None,
     ui.row(
         ui.column(3),
         ui.column(6,
             ui.input_radio_buttons(
-                'attention1',
-                ui.HTML('Which candidate was older?'),
-                {0: 'Candidate 1',
-                1: 'Candidate 2',
-                2: "I don't know"},
-                width='100%'
+                id="attention",
+                label=ui.HTML("Which candidate was older?"),
+                choices={
+                    0: "Candidate 1",
+                    1: "Candidate 2",
+                    2: "I don't know"
+                },
+                selected="",
+                width="100%"
             )
         ),
         ui.column(3),
     ),
     # 'Next' button for navigating through the survey
     ui.row(
-        ui.column(5),
+        ui.column(3),
         ui.column(
-            2,
+            6,
             ui.div(
-                {"style": "text-align: center;"},
-                ui.input_action_button("next_page_postsurvey", "Next page \u27A4"),
+                {"style": "text-align: right;"},
+                ui.input_action_button(
+                    "next_page_postsurvey",
+                    "Next page \u27A4"
+                ),
             )
         ),
-        ui.column(5),
+        ui.column(3),
     ),
     value="panel_attention",
 )
 
+# UI for the demographics collection exit page
 postsurvey_ui = ui.nav_panel(
     None,
     ui.row(
         ui.column(3),
         ui.column(
             6,
-            {"style": "text-align: justify; font-size: 20px;"},
+            {"style": "text-align: justify;"},
             ui.div(
-                ui.HTML('This section has the purpose of collecting information on age, race, ethnicity, and sex. This will allow us to contextualize our results. It is important to us that you answer these questions honestly.')
+                ui.HTML(
+                    "This section has the purpose of collecting information "
+                    + "on age, race, ethnicity, and sex. This will allow us "
+                    + "to contextualize our results. It is important to us "
+                    + "that you answer these questions honestly."
+                )
             )
         ),
         ui.column(3),
@@ -58,22 +65,23 @@ postsurvey_ui = ui.nav_panel(
     ui.row(
         ui.column(3),
         ui.column(6,
-                  ui.HTML('What is your age?'),
-                  ui.div(ui.input_text('age',"",""),
-                         ui.output_text_verbatim('age')),
-                         ui.input_radio_buttons('demo1',
-                                                '',
-                                                {'skip': 'Prefer not to disclose'},
-                                                selected='None')),
-                        
-        ui.column(3),
+            ui.HTML("What is your age?"),
+            ui.input_text("resp_age_text", "", ""),
+            ui.input_checkbox_group(
+                id="resp_age_check",
+                label="",
+                choices={"age_skip": "Prefer not to disclose"},
+                width="100%"
+            )
+        ),        
+        ui.column(3)
     ),
     ui.br(),
     ui.row(
         ui.column(3),
         ui.column(6,
             ui.input_checkbox_group(
-                id="race",
+                id="resp_race",
                 label=ui.HTML("What is your race? Check all that apply."),
                 choices={
                     "race_aian": "American Indian or Alaska Native",
@@ -83,7 +91,8 @@ postsurvey_ui = ui.nav_panel(
                     "race_white": "White",
                     "race_other": "Other",
                     "race_skip": "Prefer not to disclose"
-                }
+                },
+                width="100%"
             )
         ),
         ui.column(3),
@@ -92,39 +101,40 @@ postsurvey_ui = ui.nav_panel(
     ui.row(
         ui.column(3),
         ui.column(6,
-                  ui.input_radio_buttons('demo3',
-                                         'Are you Hispanic, Latino, or of Spanish origin?',
-                                         {0: 'No',
-                                          1: 'Yes',
-                                          2: 'Prefer not to disclose'},
-                  )
+            ui.input_radio_buttons(
+                id="resp_ethnicity",
+                label="Are you Hispanic, Latino, or of Spanish origin?",
+                choices={0: "No", 1: "Yes", 2: "Prefer not to disclose"},
+                selected="",
+                width="100%"
+            )
         ),
-        ui.column(3),
+        ui.column(3)
     ),
     ui.br(),
     ui.row(
         ui.column(3),
         ui.column(6,
-                  ui.input_radio_buttons('demo4',
-                                         'What is your sex?',
-                                         {0: 'Female',
-                                          1: 'Male',
-                                          2: 'Prefer not to disclose'},
-                  )
+            ui.input_radio_buttons(
+                id="resp_sex",
+                label="What is your sex?",
+                choices={0: "Female", 1: "Male", 2: "Prefer not to disclose"},
+                selected=""
+            )
         ),
         ui.column(3),
     ),
     # 'Next' button for navigating through the survey
     ui.row(
-        ui.column(5),
+        ui.column(3),
         ui.column(
-            2,
+            6,
             ui.div(
-                {"style": "text-align: center;"},
+                {"style": "text-align: right;"},
                 ui.input_action_button("next_page_end", "Next page \u27A4"),
             ),
         ),
-        ui.column(5),
+        ui.column(3),
     ),
     ui.br(),
     value="panel_postsurvey",
