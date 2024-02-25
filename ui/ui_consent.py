@@ -66,9 +66,9 @@ screening_questions = ui.nav_panel(
         ui.column(6,
             ui.input_text(
                 id="captcha",
-                label=ui.markdown(
+                label=ui.HTML(
                     "The following question is to verify that you are a "
-                    + "real person.<br><br>Please enter the word **purple** "
+                    + "real person.<br><br>Please enter the word <b>purple</b> "
                     + "in the box below."
                 ),
                 width="100%"
