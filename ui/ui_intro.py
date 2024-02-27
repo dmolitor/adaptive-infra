@@ -103,19 +103,19 @@ intro_ui = ui.nav_panel(
     ),
     ui.row(
         ui.column(5),
-        ui.column(
-            3,
-            ui.input_radio_buttons(
-                id="consent",
-                label="I have read the above information.",
-                choices={
-                    "consent_agree": "I consent to participate",
-                    "consent_disagree": "I do not consent to participate",
-                },
-                selected="",
-                width="100%"
-            )
-        ),
+            ui.column(
+                3,
+                ui.input_radio_buttons(
+                    id="consent",
+                    label="I have read the above information.",
+                    choices={
+                        "consent_agree": "I consent to participate",
+                        "consent_disagree": "I do not consent to participate",
+                    },
+                    selected="",
+                    width="100%",
+                )
+            ),
         ui.column(4)
     ),
     ui.row(

@@ -31,6 +31,11 @@ def get_prolific_id(session: Session) -> str | None:
     query_dict = parse_qs(parsed_url.query)
     # 'Unbox' single item lists
     query_dict = {k: v[0] if len(v) == 1 else v for k, v in query_dict.items()}
+    
+    # Handle cases where there is no ID to parse in URL
+    if query_dict == {}:
+        return None
+    
     # Get the Prolific ID
     prolific_id = (
         query_dict
