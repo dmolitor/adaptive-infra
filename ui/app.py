@@ -7,7 +7,15 @@ from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
 from ui_consent import screening_questions
 from ui_postsurvey import postsurvey_ui, attention_ui
-from utils import error, error_clear, get_prolific_id
+from utils import (
+    error,
+    error_clear,
+    get_prolific_id,
+    scroll_bottom,
+    scroll_top,
+    validate_age,
+    validate_race
+)
 
 """
 This script lays out the UI and the logic for the majority of the front-facing
@@ -23,6 +31,11 @@ cur_dir = Path(__file__).resolve().parent
 app_ui = ui.page_fluid(
     # Bootswatch Simplex theme: browse themes here [https://bootswatch.com/]
     shinyswatch.theme.simplex(),
+    # Import CSS styling
+    ui.head_content(ui.include_css(cur_dir / "table-styles.css")),
+    # Add scripts to scroll to the top and bottom of the page
+    scroll_top,
+    scroll_bottom,
     ui.br(),
     # Cornell Logo on each page
     ui.panel_title(ui.img(src="cornell-reduced-red.svg", height="45px")),
@@ -41,10 +54,15 @@ app_ui = ui.page_fluid(
 def server(input: Inputs, output: Outputs, session: Session):
     """This function handles all the logic for the app"""
     
-    # Logic for 'Next Page' button on landing page
+    # Logic for 'Next Page' button on landing page.
+    # 
+    # This function uses the async keyword because we want to call the 
+    # Javascript 'scroll' script (defined above), that will scroll
+    # to the top of the page. This requires us to 'await' the result, and
+    # await can only be called in an async context.
     @reactive.Effect
     @reactive.event(input.next_page_prolific_screening)
-    def _():
+    async def _():
         # Grab consent value
         consent = input.consent()
         # Clear all errors (there may be none; that's fine)
@@ -57,27 +75,30 @@ def server(input: Inputs, output: Outputs, session: Session):
                 message="This field is required",
                 where="beforeEnd"
             )
+            await session.send_custom_message("scroll_bottom", "")
         # If they consent, proceed
         elif consent == "consent_agree":
             # Autofill the 'Prolific ID' text entry
             ui.update_text(
                 id="prolific_id",
-                label=(
+                label=ui.HTML(
                     "What is your Prolific ID? Please note that this response "
                     + "should auto-fill with the correct ID."
                 ),
                 value=get_prolific_id(session)
             )
+            await session.send_custom_message("scroll_top", "")
             # Switch tabs to the Prolific questions tab
             ui.update_navs("hidden_tabs", selected="panel_prolific_q")
         # Otherwise, bring them to the exit page
         else:
+            await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_no_consent")
     
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
     @reactive.event(input.next_page_survey)
-    def _():
+    async def _():
         # Grab the following values: captcha, prolific_id, location, commitment
         captcha = input.captcha()
         prolific_id = input.prolific_id()
@@ -127,12 +148,15 @@ def server(input: Inputs, output: Outputs, session: Session):
             )
             proceed = False
         if proceed:
+            await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_survey")
+        else:
+            await session.send_custom_message("scroll_bottom", "")
     
     # Logic for 'Next Page' on the primary survey page
     @reactive.Effect
     @reactive.event(input.next_page_attention)
-    def _():
+    async def _():
         # Grab the following values: candidate
         candidate = input.candidate()
         # Clear all errors (there may be none; that's fine)
@@ -145,18 +169,105 @@ def server(input: Inputs, output: Outputs, session: Session):
                 message="* This field is required",
                 where="beforeEnd"
             )
+            await session.send_custom_message("scroll_bottom", "")
         else:
+            await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_attention")
 
     @reactive.Effect
     @reactive.event(input.next_page_postsurvey)
-    def _():
-        ui.update_navs("hidden_tabs", selected="panel_postsurvey")
+    async def _():
+        # Grab the following values: attention
+        attention = input.attention()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(id="attention_status")
+        # Ensure candidate choice has been selected
+        if attention not in ["0", "1", "2"]:
+            error(
+                id="attention_status",
+                selector="#attention",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            await session.send_custom_message("scroll_bottom", "")
+        else:
+            await session.send_custom_message("scroll_top", "")
+            ui.update_navs("hidden_tabs", selected="panel_postsurvey")
 
     @reactive.Effect
     @reactive.event(input.next_page_end)
-    def _():
-        ui.update_navs("hidden_tabs", selected="panel_outro")
+    async def _():
+        # Grab user input values from the survey
+        resp_age_text = input.resp_age_text()
+        resp_age_check = input.resp_age_check()
+        resp_race = input.resp_race()
+        resp_ethnicity = input.resp_ethnicity()
+        resp_sex = input.resp_sex()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(
+            id=["resp_age_status",
+                "resp_race_status",
+                "resp_ethnicity_status",
+                "resp_sex_status"]
+        )
+        # Are we ready to proceed?
+        proceed = True
+        # Ensure one and only one age value is entered
+        if resp_age_text == "" and not validate_age(resp_age_check):
+            error(
+                id="resp_age_status",
+                selector="#resp_age_check",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            proceed = False
+        elif resp_age_text != "" and validate_age(resp_age_check):
+            error(
+                id="resp_age_status",
+                selector="#resp_age_check",
+                message="* Invalid entry",
+                where="beforeEnd"
+            )
+            proceed = False
+        # Ensure valid race value(s) are selected
+        if not validate_race(resp_race) and len(resp_race) > 1:
+            error(
+                id="resp_race_status",
+                selector="#resp_race",
+                message="* Invalid entry",
+                where="beforeEnd"
+            )
+            proceed = False
+        elif not validate_race(resp_race):
+            error(
+                id="resp_race_status",
+                selector="#resp_race",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            proceed = False
+        # Validate ethnicity entry
+        if resp_ethnicity not in ["0", "1", "2"]:
+            error(
+                id="resp_ethnicity_status",
+                selector="#resp_ethnicity",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            proceed = False
+        # Validate sex entry
+        if resp_sex not in ["0", "1", "2"]:
+            error(
+                id="resp_sex_status",
+                selector="#resp_sex",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            proceed = False
+        if proceed:
+            ui.update_navs("hidden_tabs", selected="panel_outro")
+        else:
+            await session.send_custom_message("scroll_bottom", "")
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image

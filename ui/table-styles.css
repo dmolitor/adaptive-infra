@@ -21,3 +21,6 @@ table td {
     border-bottom: none;
     border-right: none;
 }
+body {
+    font-size: 20px;
+}
