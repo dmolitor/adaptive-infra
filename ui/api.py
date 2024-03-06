@@ -99,3 +99,8 @@ def top_param(n: int | None = None):
     request = req.get(url)
     request.raise_for_status()
     return request.json()
+
+def submit_response(form: dict):
+    """Submit a filled-out survey form via the API"""
+    url = api_url + "/responses"
+    req.post(url, json=form).raise_for_status()

@@ -1,3 +1,4 @@
+from api import submit_response
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
@@ -14,7 +15,8 @@ from utils import (
     scroll_bottom,
     scroll_top,
     validate_age,
-    validate_race
+    validate_race,
+    ResponseForm
 )
 
 """
@@ -26,6 +28,9 @@ respectively.
 
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
+
+# Initialize the response form
+response_form = ResponseForm()
 
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
@@ -90,10 +95,16 @@ def server(input: Inputs, output: Outputs, session: Session):
             await session.send_custom_message("scroll_top", "")
             # Switch tabs to the Prolific questions tab
             ui.update_navs("hidden_tabs", selected="panel_prolific_q")
+            # Update the response form
+            response_form.consent = True
         # Otherwise, bring them to the exit page
         else:
             await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_no_consent")
+            # Update the response form
+            response_form.consent = False
+            # Submit the response form
+            submit_response(response_form.generate_form())
     
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
@@ -150,6 +161,19 @@ def server(input: Inputs, output: Outputs, session: Session):
         if proceed:
             await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_survey")
+            # Update the response form
+            response_form.prolific_id = prolific_id
+            if location == "0":
+                response_form.in_usa = True
+            else:
+                response_form.in_usa = False
+            if commitment == "0":
+                response_form.commitment = "yes"
+            elif commitment == "1":
+                response_form.commitment = "unsure"
+            else:
+                response_form.commitment = "no"
+            response_form.captcha = captcha
         else:
             await session.send_custom_message("scroll_bottom", "")
     
@@ -173,6 +197,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         else:
             await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_attention")
+            # Update the response form
+            response_form.candidate_preference = int(candidate)
 
     @reactive.Effect
     @reactive.event(input.next_page_postsurvey)
@@ -193,6 +219,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         else:
             await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_postsurvey")
+            # Update the response form
+            response_form.candidate_older = int(attention)
 
     @reactive.Effect
     @reactive.event(input.next_page_end)
@@ -266,6 +294,24 @@ def server(input: Inputs, output: Outputs, session: Session):
             proceed = False
         if proceed:
             ui.update_navs("hidden_tabs", selected="panel_outro")
+            # Update the response form
+            if resp_age_text != "":
+                response_form.age = int(resp_age_text)
+            if "race_skip" not in resp_race:
+                if len(resp_race) == 1:
+                    response_form.race = resp_race[0]
+                else:
+                    response_form.race = ", ".join(resp_race)
+            if resp_ethnicity == "0":
+                response_form.ethnicity = "hisp_latin_spanish_no"
+            elif resp_ethnicity == "1":
+                response_form.ethnicity = "hisp_latin_spanish_yes"
+            if resp_sex == "0":
+                response_form.sex = "female"
+            elif resp_sex == "1":
+                response_form.sex = "male"
+            # Submit the response form
+            submit_response(response_form.generate_form())
         else:
             await session.send_custom_message("scroll_bottom", "")
 

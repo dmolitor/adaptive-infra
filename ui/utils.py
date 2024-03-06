@@ -1,6 +1,38 @@
 from shiny import Session, ui
 from urllib.parse import urlparse, parse_qs
 
+class ResponseForm:
+    """A class to collect all user-submitted data"""
+    def __init__(self) -> "ResponseForm":
+        self.consent: bool = None
+        self.prolific_id: str | None = None
+        self.in_usa: bool | None = None
+        self.commitment: str | None = None
+        self.captcha: str | None = None
+        self.candidate_preference: int | None = None
+        self.candidate_older: int | None = None
+        self.age: int | None = None
+        self.race: str | None = None
+        self.ethnicity: str | None = None
+        self.sex: str | None = None
+    
+    def generate_form(self) -> dict:
+        """Generate a dictionary containing user responses"""
+        out = {
+            "consent": self.consent,
+            "prolific_id": self.prolific_id,
+            "in_usa": self.in_usa,
+            "commitment": self.commitment,
+            "captcha":self.captcha,
+            "candidate_preference": self.candidate_preference,
+            "candidate_older": self.candidate_older,
+            "age": self.age,
+            "race": self.race,
+            "ethnicity": self.ethnicity,
+            "sex": self.sex
+        }
+        return out
+
 def error(
         id: str,
         selector: str,
