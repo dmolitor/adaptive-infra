@@ -30,27 +30,27 @@ class BanditJSON(ParametersJSON):
         ```
         "meta": {
             "a": {
-                "names": ["Joseph", "Daniel"],
-                "ages": [70, 26],
+                "names": ["Laurie Schmitt", "Allison O'Connell"],
+                "ages": [49, 62],
                 "political_exp": ["Member of Congress", "State legislator"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             },
             "b": {
-                "names": ["John", "David"],
-                "ages": [70, 26],
-                "political_exp": ["Member of Congress", "State legislator"],
+                "names": ["Laurie Schmitt", "Allison O'Connell"],
+                "ages": [49, 62],
+                "political_exp": ["No experience", "No experience"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             },
             "c": {
-                "names": ["Timothy", "Paul"],
+                "names": ["Tanisha Rivers", "Keisha Mosely"],
                 "ages": [70, 26],
                 "political_exp": ["Member of Congress", "State legislator"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             },
             "d": {
-                "names": ["Yi-Tser", "Robert"],
-                "ages": [70, 26],
-                "political_exp": ["Member of Congress", "State legislator"],
+                "names": ["Tanisha Rivers", "Keisha Mosely"],
+                "ages": [49, 62],
+                "political_exp": ["No experience", "No experience"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             }
         }

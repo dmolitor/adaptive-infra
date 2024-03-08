@@ -23,27 +23,27 @@ if not req.get(api_url + "/bandit").json():
         "params": {"alpha": 1, "beta": 1},
         "meta": {
             "arm1": {
-                "names": ["Joseph", "Daniel"],
-                "ages": [70, 26],
+                "names": ["Laurie Schmitt", "Allison O'Connell"],
+                "ages": [49, 62],
                 "political_exp": ["Member of Congress", "State legislator"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             },
             "arm2": {
-                "names": ["John", "David"],
-                "ages": [67, 29],
-                "political_exp": ["Member of Congress", "State legislator"],
+                "names": ["Laurie Schmitt", "Allison O'Connell"],
+                "ages": [49, 62],
+                "political_exp": ["No experience", "No experience"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             },
             "arm3": {
-                "names": ["Timothy", "Paul"],
-                "ages": [64, 32],
+                "names": ["Tanisha Rivers", "Keisha Mosely"],
+                "ages": [70, 26],
                 "political_exp": ["Member of Congress", "State legislator"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             },
             "arm4": {
-                "names": ["Yi-Tser", "Robert"],
-                "ages": [61, 35],
-                "political_exp": ["Member of Congress", "State legislator"],
+                "names": ["Tanisha Rivers", "Keisha Mosely"],
+                "ages": [49, 62],
+                "political_exp": ["No experience", "No experience"],
                 "career_exp": ["Restaurant owner", "Small business owner"]
             }
         }
