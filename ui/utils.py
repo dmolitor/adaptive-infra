@@ -11,10 +11,12 @@ class ResponseForm:
         self.captcha: str | None = None
         self.candidate_preference: int | None = None
         self.candidate_older: int | None = None
+        self.candidate_older_truth: int | None
         self.age: int | None = None
         self.race: str | None = None
         self.ethnicity: str | None = None
         self.sex: str | None = None
+        self.discriminated: bool | None = None
     
     def generate_form(self) -> dict:
         """Generate a dictionary containing user responses"""
@@ -26,10 +28,12 @@ class ResponseForm:
             "captcha":self.captcha,
             "candidate_preference": self.candidate_preference,
             "candidate_older": self.candidate_older,
+            "candidate_older_truth": self.candidate_older_truth,
             "age": self.age,
             "race": self.race,
             "ethnicity": self.ethnicity,
-            "sex": self.sex
+            "sex": self.sex,
+            "discriminated": self.discriminated
         }
         return out
 
@@ -110,3 +114,12 @@ def validate_race(race: tuple[str]) -> bool:
         if len(race) > 1 and "race_skip" in race:
             return False
     return True
+
+def which_is_older(context: dict) -> int:
+    context = context["context"]
+    candidate1 = context["first"]
+    candidate2 = context["second"]
+    if candidate1["age"] >= candidate2["age"]:
+        return 0
+    else:
+        return 1

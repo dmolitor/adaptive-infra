@@ -1,4 +1,4 @@
-from init_db import submit_response
+from init_db import context, increment_params, submit_response
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
@@ -16,6 +16,7 @@ from utils import (
     scroll_top,
     validate_age,
     validate_race,
+    which_is_older,
     ResponseForm
 )
 
@@ -163,13 +164,13 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_survey")
             # Update the response form
             response_form.prolific_id = prolific_id
-            if location == "0":
+            if location == "1":
                 response_form.in_usa = True
             else:
                 response_form.in_usa = False
-            if commitment == "0":
+            if commitment == "1":
                 response_form.commitment = "yes"
-            elif commitment == "1":
+            elif commitment == "2":
                 response_form.commitment = "unsure"
             else:
                 response_form.commitment = "no"
@@ -199,6 +200,17 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_attention")
             # Update the response form
             response_form.candidate_preference = int(candidate)
+            older_candidate = which_is_older(context)
+            response_form.candidate_older_truth = older_candidate
+            if response_form.candidate_preference == older_candidate:
+                response_form.discriminated = False
+            else:
+                response_form.discriminated = True
+            # Increment the parameters of the corresponding bandit arm
+            if response_form.discriminated:
+                increment_params(context["arm_id"], alpha=True)
+            else:
+                increment_params(context["arm_id"], beta=True)
 
     @reactive.Effect
     @reactive.event(input.next_page_postsurvey)

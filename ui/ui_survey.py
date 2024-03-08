@@ -1,3 +1,4 @@
+from init_db import context
 from pathlib import Path
 from shiny import ui
 
@@ -34,17 +35,7 @@ survey_ui = ui.nav_panel(
             ui.column(
                 6,
                 ui.div(
-                    ui.HTML(
-                        "<table><tbody><tr><th></th><th>Candidate 1"
-                        + "</th><th>Candidate 2</th></tr><tr><td>Name</td>"
-                        + "<td>First Name</td><td>First Name<br></td></tr>"
-                        + "<tr><td>Ages</td><td>Age 1<br></td><td>Age 2<br>"
-                        + "</td></tr><tr><td>Political experience</td>"
-                        + "<td>Pol Experience 1</td><td>Pol Experience 2</td>"
-                        + "</tr><tr><td>Career experience</td>"
-                        + "<td>Career 1</td><td>Career 2</td></tr>"
-                        + "</tbody></table>"
-                    ),
+                    ui.HTML(context["html_content"]),
                 ),
             ),
         ui.column(3),
