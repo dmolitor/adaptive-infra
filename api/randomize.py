@@ -4,11 +4,13 @@ from sqlmodel import Session, select
 from tables import Bandit
 from typing import List
 
-"""This script is just a placeholder for all Jennah's stuff"""
+# do we want to seed this or allow that as an option?
 
 def randomize_choice_order() -> List[int]:
-    """Randomize which of the two candidates is shown first"""
-    return random.sample([0, 1], 2)
+    """Randomize whether the older candidate is shown first"""
+    age_orders = [[0,1],[-1,0]]
+    print(random.sample([0, 1], 1))
+    return age_orders[random.sample([0, 1], 1)]
 
 def randomize_context(engine: Engine) -> int:
     """Randomize which bandit arm is shown to the user"""
@@ -16,7 +18,6 @@ def randomize_context(engine: Engine) -> int:
         bandit = session.exec(select(Bandit)).all()
         arm_ids = [arm.id for arm in bandit]
         arm_labels = [arm.label for arm in bandit]
-        [target_arm] = random.sample(arm_ids, 1)
     return target_arm
 
 def randomize_context_items(input: List[str]) -> List[str]:
