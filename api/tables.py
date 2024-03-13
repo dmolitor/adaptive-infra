@@ -1,63 +1,9 @@
-from pydantic import BaseModel
 from typing import List
 from sqlmodel import Field, Relationship, SQLModel
 
 """
-This script creates data validation models for the API and constructs
-tables to insert and work with the data in the Postgres db.
+This script creates data models for each table in the database.
 """
-
-class ParametersJSON(BaseModel):
-    """Validate parameters updated via the api"""
-    params: dict
-
-class BanditJSON(ParametersJSON):
-    """
-    A class for validating Bandit data submitted via the API
-
-    labels: A list of arm labels
-    params: A dictionary of initial parameters for the distributions
-        e.g. {'a': 1, 'b': 1} for a Beta(1, 1) prior distribution.
-        See the Parameters class below. NOTE: We could initialize
-        with different prior values for alpha and beta by changing
-        params: dict to params: List[dict] and initializing the
-        choice for each distinct arm.
-    meta: A dictionary of metadata for each arm (context). This
-        dictionary should follow the following format. Its keys should
-        be exactly the `labels` above. Each value should be another
-        dictionary containing the data for the candidates/job applicants
-        to be compared within each context. E.g. as follows:
-        ```
-        "meta": {
-            "a": {
-                "names": ["Laurie Schmitt", "Allison O'Connell"],
-                "ages": [49, 62],
-                "political_exp": ["Member of Congress", "State legislator"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            },
-            "b": {
-                "names": ["Laurie Schmitt", "Allison O'Connell"],
-                "ages": [49, 62],
-                "political_exp": ["No experience", "No experience"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            },
-            "c": {
-                "names": ["Tanisha Rivers", "Keisha Mosely"],
-                "ages": [70, 26],
-                "political_exp": ["Member of Congress", "State legislator"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            },
-            "d": {
-                "names": ["Tanisha Rivers", "Keisha Mosely"],
-                "ages": [49, 62],
-                "political_exp": ["No experience", "No experience"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            }
-        }
-        ```
-    """
-    labels: List[str] | None
-    meta: dict
 
 class Bandit(SQLModel, table=True):
     """
@@ -71,6 +17,19 @@ class Bandit(SQLModel, table=True):
     label: str
     parameters: List["Parameters"] = Relationship(back_populates="arm")
     meta: List["Metadata"] = Relationship(back_populates="arm")
+    pi: List["Pi"] = Relationship(back_populates="arm")
+    responses: List["Response"] = Relationship(back_populates="arm")
+
+class Batch(SQLModel, table=True):
+    """
+    A database table for recording the batch sizes and responses.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    remaining: int | None
+    active: bool
+    pi: List["Pi"] = Relationship(back_populates="batch")
+    parameters: List["Parameters"] = Relationship(back_populates="batch")
+    responses: List["Response"] = Relationship(back_populates="batch")
 
 class Metadata(SQLModel, table=True):
     """
@@ -100,11 +59,23 @@ class Parameters(SQLModel, table=True):
     """
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
+    batch_id: int = Field(foreign_key="batch.id")
     alpha: int = 1
     beta: int = 1
     arm: Bandit = Relationship(back_populates="parameters")
+    batch: "Batch" = Relationship(back_populates="parameters")
 
-## TODO: Try to de-duplicate the code between Response and ResponseJSON
+class Pi(SQLModel, table=True):
+    """
+    A class for recording the percentage of 1000 realizations in which
+    each arm is the most (or least) discriminatory arm.
+    """
+    id: int | None = Field(default=None, primary_key=True)
+    batch_id: int = Field(foreign_key="batch.id")
+    arm_id: int = Field(foreign_key="bandit.id")
+    pi: float
+    arm: Bandit = Relationship(back_populates="pi")
+    batch: "Batch" = Relationship(back_populates="pi")
 
 class Response(SQLModel, table=True):
     """
@@ -124,6 +95,8 @@ class Response(SQLModel, table=True):
     sex: Demographics
     """
     id: int | None = Field(default=None, primary_key=True)
+    arm_id: int = Field(foreign_key="bandit.id")
+    batch_id: int = Field(foreign_key="batch.id")
     consent: bool
     prolific_id: str | None
     in_usa: bool | None
@@ -137,21 +110,5 @@ class Response(SQLModel, table=True):
     ethnicity: str | None
     sex: str | None
     discriminated: bool | None
-
-class ResponseJSON(BaseModel):
-    """
-    A class for validating response data submitted via the API
-    """
-    consent: bool
-    prolific_id: str | None
-    in_usa: bool | None
-    commitment: str | None
-    captcha: str | None
-    candidate_preference: int | None
-    candidate_older: int | None
-    candidate_older_truth: int | None
-    age: int | None
-    race: str | None
-    ethnicity: str | None
-    sex: str | None
-    discriminated: bool | None
+    arm: Bandit = Relationship(back_populates="responses")
+    batch: "Batch" = Relationship(back_populates="responses")
