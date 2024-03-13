@@ -1,14 +1,15 @@
-from init_db import context, increment_params, submit_response
+from init_db import BATCH_SIZE
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
-from ui_survey import survey_ui
+from ui_consent import screening_questions
 from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
-from ui_consent import screening_questions
 from ui_postsurvey import postsurvey_ui, attention_ui
-from utils import (
+from ui_survey import cur_context, survey_ui
+from utils_db import current_batch, submit_response, update_batch
+from utils_ui import (
     error,
     error_clear,
     get_prolific_id,
@@ -22,16 +23,25 @@ from utils import (
 
 """
 This script lays out the UI and the logic for the majority of the front-facing
-survey (Shiny app). To see the specific pages (e.g. the intro page, the cartoon
-page, or the outro page) see `ui_intro.py`, `ui_cartoons.py`, or `ui_outro.py`,
-respectively.
+survey (Shiny app). To see the specific elements (e.g. the intro page, the
+consent elements, the survey page, the demographics page, etc.) see the 
+corresponding `ui_{element}.py` file, respectively.
+
+This script also handles transferring user response data to the database as
+well as indicating when to update survey batches and their corresponding
+parameters
 """
 
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
 
+# Get the current batch
+cur_batch = current_batch()
+
 # Initialize the response form
 response_form = ResponseForm()
+response_form.arm_id = cur_context["arm_id"]
+response_form.batch_id = cur_batch["id"]
 
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
@@ -46,7 +56,7 @@ app_ui = ui.page_fluid(
     # Cornell Logo on each page
     ui.panel_title(ui.img(src="cornell-reduced-red.svg", height="45px")),
     ui.navset_hidden(
-        # intro_ui,
+        intro_ui,
         survey_ui,
         screening_questions,
         outro_ui,
@@ -65,7 +75,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     # This function uses the async keyword because we want to call the 
     # Javascript 'scroll' script (defined above), that will scroll
     # to the top of the page. This requires us to 'await' the result, and
-    # await can only be called in an async context.
+    # await can only be called in an async cur_context.
     @reactive.Effect
     @reactive.event(input.next_page_prolific_screening)
     async def _():
@@ -106,6 +116,8 @@ def server(input: Inputs, output: Outputs, session: Session):
             response_form.consent = False
             # Submit the response form
             submit_response(response_form.generate_form())
+            # Update batches and corresponding parameters if appropriate
+            update_batch(cur_batch["id"], BATCH_SIZE)
     
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
@@ -200,7 +212,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_attention")
             # Update the response form
             response_form.candidate_preference = int(candidate)
-            older_candidate = which_is_older(context)
+            older_candidate = which_is_older(cur_context)
             response_form.candidate_older_truth = older_candidate
             if response_form.candidate_preference == older_candidate:
                 response_form.discriminated = False
@@ -208,9 +220,11 @@ def server(input: Inputs, output: Outputs, session: Session):
                 response_form.discriminated = True
             # Increment the parameters of the corresponding bandit arm
             if response_form.discriminated:
-                increment_params(context["arm_id"], alpha=True)
+                #increment_params(cur_context["arm_id"], alpha=True)
+                pass
             else:
-                increment_params(context["arm_id"], beta=True)
+                pass
+                #increment_params(cur_context["arm_id"], beta=True)
 
     @reactive.Effect
     @reactive.event(input.next_page_postsurvey)
@@ -324,6 +338,8 @@ def server(input: Inputs, output: Outputs, session: Session):
                 response_form.sex = "male"
             # Submit the response form
             submit_response(response_form.generate_form())
+            # Update batches and corresponding parameters if appropriate
+            update_batch(cur_batch["id"], BATCH_SIZE)
         else:
             await session.send_custom_message("scroll_bottom", "")
 

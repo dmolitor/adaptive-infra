@@ -1,73 +1,50 @@
-import requests as req
-import os
+from utils_db import initialize_bandit
 
-env_vars = os.environ
+"""
+This script initializes the Bandit table in the database and also
+initializes the batch size for the current experiment.
+"""
 
-ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
-# Get the outward facing port at which the API is exposed
-API_HOST_PORT = env_vars["API_HOST_PORT"]
-
-if ADAPTIVE_TESTING is not None and ADAPTIVE_TESTING:
-    network = "localhost"
-else:
-    network = "api"
-
-# Construct the url for querying the API
-api_url = f"http://{network}:{API_HOST_PORT}"
+# Set the batch size!
+BATCH_SIZE = 1
 
 # Initialize the bandit table if it does not already exist
-if not req.get(api_url + "/bandit").json():
-    # Initialize the bandit (all its arms and corresponding parameters)
-    bandit = {
-        "labels": ["arm1", "arm2", "arm3", "arm4"],
-        "params": {"alpha": 1, "beta": 1},
-        "meta": {
-            "arm1": {
-                "names": ["Laurie Schmitt", "Allison O'Connell"],
-                "ages": [49, 62],
-                "political_exp": ["Member of Congress", "State legislator"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            },
-            "arm2": {
-                "names": ["Laurie Schmitt", "Allison O'Connell"],
-                "ages": [49, 62],
-                "political_exp": ["No experience", "No experience"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            },
-            "arm3": {
-                "names": ["Tanisha Rivers", "Keisha Mosely"],
-                "ages": [70, 26],
-                "political_exp": ["Member of Congress", "State legislator"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            },
-            "arm4": {
-                "names": ["Tanisha Rivers", "Keisha Mosely"],
-                "ages": [49, 62],
-                "political_exp": ["No experience", "No experience"],
-                "career_exp": ["Restaurant owner", "Small business owner"]
-            }
+# Initialize the bandit (all its arms and corresponding parameters)
+bandit = {
+    "labels": ["arm1", "arm2", "arm3", "arm4"],
+    "params": {
+        "arm1": {"alpha": 1, "beta": 1},
+        "arm2": {"alpha": 1, "beta": 1},
+        "arm3": {"alpha": 1, "beta": 1},
+        "arm4": {"alpha": 1, "beta": 1}
+    },
+    "meta": {
+        "arm1": {
+            "names": ["Laurie Schmitt", "Allison O'Connell"],
+            "ages": [49, 62],
+            "political_exp": ["Member of Congress", "State legislator"],
+            "career_exp": ["Restaurant owner", "Small business owner"]
+        },
+        "arm2": {
+            "names": ["Laurie Schmitt", "Allison O'Connell"],
+            "ages": [49, 62],
+            "political_exp": ["No experience", "No experience"],
+            "career_exp": ["Restaurant owner", "Small business owner"]
+        },
+        "arm3": {
+            "names": ["Tanisha Rivers", "Keisha Mosely"],
+            "ages": [70, 26],
+            "political_exp": ["Member of Congress", "State legislator"],
+            "career_exp": ["Restaurant owner", "Small business owner"]
+        },
+        "arm4": {
+            "names": ["Tanisha Rivers", "Keisha Mosely"],
+            "ages": [49, 62],
+            "political_exp": ["No experience", "No experience"],
+            "career_exp": ["Restaurant owner", "Small business owner"]
         }
-    }
-    req.post(api_url + "/bandit", json=bandit).raise_for_status()
-
-# Initialize the within-context comparison data
-# Get randomized context comparison data
-context_request = req.get(api_url + "/randomize")
-context_request.raise_for_status()
-context = context_request.json()
-
-def submit_response(form: dict) -> None:
-    """Submit a filled-out survey form via the API"""
-    url = api_url + "/responses"
-    req.post(url, json=form).raise_for_status()
-
-def increment_params(
-    arm_id: int,
-    alpha: bool = False,
-    beta: bool = False
-) -> None:
-    post = req.post(
-        api_url
-        + f"/bandit/parameters?arm_id={str(arm_id)}&alpha={alpha}&beta={beta}"
-    )
-    post.raise_for_status()
+    },
+    "pi": {"arm1": 0.25, "arm2": 0.5, "arm3": 0.75, "arm4": 1},
+    "batch": {"remaining": BATCH_SIZE, "active": True}
+}
+initialize_bandit(bandit)
