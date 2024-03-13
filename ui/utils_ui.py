@@ -1,17 +1,23 @@
 from shiny import Session, ui
 from urllib.parse import urlparse, parse_qs
 
+"""
+This script defines utility functions for interacting with the user interface.
+"""
+
 class ResponseForm:
     """A class to collect all user-submitted data"""
     def __init__(self) -> "ResponseForm":
         self.consent: bool = None
+        self.arm_id: int = None
+        self.batch_id: int = None
         self.prolific_id: str | None = None
         self.in_usa: bool | None = None
         self.commitment: str | None = None
         self.captcha: str | None = None
         self.candidate_preference: int | None = None
         self.candidate_older: int | None = None
-        self.candidate_older_truth: int | None
+        self.candidate_older_truth: int | None = None
         self.age: int | None = None
         self.race: str | None = None
         self.ethnicity: str | None = None
@@ -22,6 +28,8 @@ class ResponseForm:
         """Generate a dictionary containing user responses"""
         out = {
             "consent": self.consent,
+            "arm_id": self.arm_id,
+            "batch_id": self.batch_id,
             "prolific_id": self.prolific_id,
             "in_usa": self.in_usa,
             "commitment": self.commitment,
@@ -43,6 +51,7 @@ def error(
         message: str = "Please select exactly one option!",
         where: str = "afterEnd"
     ):
+    """Inserts an error message after a user interface element"""
     ui.remove_ui(selector=f"#{id}")
     status = ui.help_text(
         ui.span(
@@ -54,12 +63,14 @@ def error(
     ui.insert_ui(ui=status, selector=selector, where=where)
 
 def error_clear(id: str | list[str]):
+    """Removes all error messages from a user interface element"""
     if not isinstance(id, list):
         id = [id]
     for i in id:
         ui.remove_ui(selector=f"#{i}")
 
 def get_prolific_id(session: Session) -> str | None:
+    """Retrieves the current user's Prolific ID from the URL"""
     url = session.input[".clientdata_url_search"]()
     # Parse the URL
     parsed_url = urlparse(url)
@@ -67,11 +78,9 @@ def get_prolific_id(session: Session) -> str | None:
     query_dict = parse_qs(parsed_url.query)
     # 'Unbox' single item lists
     query_dict = {k: v[0] if len(v) == 1 else v for k, v in query_dict.items()}
-    
     # Handle cases where there is no ID to parse in URL
     if query_dict == {}:
         return None
-    
     # Get the Prolific ID
     prolific_id = (
         query_dict
@@ -81,30 +90,14 @@ def get_prolific_id(session: Session) -> str | None:
     )
     return prolific_id
 
-scroll_top = ui.tags.script(
-    """
-    Shiny.addCustomMessageHandler('scroll_top', function(message) {
-      window.scrollTo(0, 0);
-    });
-    """
-)
-
-scroll_bottom = ui.tags.script(
-    """
-    Shiny.addCustomMessageHandler('scroll_bottom', function(message) {
-      setTimeout(() => {
-        window.scrollTo(0, document.body.scrollHeight);
-      }, 0);
-    });
-    """
-)
-
 def validate_age(age: tuple[str]) -> bool:
+    """Check if age is a non-empty result"""
     if age == ():
         return False
     return True
 
 def validate_race(race: tuple[str]) -> bool:
+    """Check if race is a non-empty result"""
     if race == ():
         return False
     else:
@@ -116,6 +109,7 @@ def validate_race(race: tuple[str]) -> bool:
     return True
 
 def which_is_older(context: dict) -> int:
+    """Which of two candidates is older"""
     context = context["context"]
     candidate1 = context["first"]
     candidate2 = context["second"]
@@ -123,3 +117,23 @@ def which_is_older(context: dict) -> int:
         return 0
     else:
         return 1
+
+# Define small JS scripts to scroll to the top and bottom of a page
+
+scroll_bottom = ui.tags.script(
+    """
+    Shiny.addCustomMessageHandler('scroll_bottom', function(message) {
+      setTimeout(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      }, 0);
+    });
+    """
+)
+
+scroll_top = ui.tags.script(
+    """
+    Shiny.addCustomMessageHandler('scroll_top', function(message) {
+      window.scrollTo(0, 0);
+    });
+    """
+)
