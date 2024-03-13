@@ -1,14 +1,15 @@
-from init_db import context
-from pathlib import Path
+from utils_db import current_batch, current_context
 from shiny import ui
 
 """
-This script lays out the UI for the cartoon comparison page. It also does a
-bit of data prep via the API to ensure the database is storing essential data.
+This script lays out the UI for the candidate comparison page. Note
+that each pair of candidates is connected to a specific context.
+A context is the same as one arm of the multi-armed bandit.
 """
 
-# Set file paths relative to ui_cartoons.py instead of being absolute
-cur_dir = Path(__file__).resolve().parent
+# Get the current batch and context
+cur_batch = current_batch()
+cur_context = current_context(cur_batch["id"])
 
 # UI for the survey questions
 survey_ui = ui.nav_panel(
@@ -31,11 +32,10 @@ survey_ui = ui.nav_panel(
     # Survey tables
     ui.row(
         ui.column(3),
-        # Make the two cartoons be clickable image buttons
             ui.column(
                 6,
                 ui.div(
-                    ui.HTML(context["html_content"]),
+                    ui.HTML(cur_context["html_content"]),
                 ),
             ),
         ui.column(3),

@@ -1,7 +1,7 @@
 from shiny import ui
 
 """
-This script lays out the UI for the survey landing page.
+This script lays out the UI for the survey exit page.
 """
 
 outro_ui = ui.nav_panel(

@@ -1,7 +1,7 @@
 from shiny import ui
 
 """
-This script lays out the UI for the consent and attention landing page.
+This script lays out the UI for the consent and attention check page.
 """
 
 screening_questions = ui.nav_panel(

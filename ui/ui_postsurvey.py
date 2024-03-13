@@ -1,6 +1,11 @@
 from pathlib import Path
 from shiny import ui
 
+"""
+This script lays out the UI for the attention check and demographics collection
+pages, respectively.
+"""
+
 # Set file paths relative to current file
 cur_dir = Path(__file__).resolve().parent
 
