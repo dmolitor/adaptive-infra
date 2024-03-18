@@ -1,7 +1,8 @@
 from shiny import ui
 
 """
-This script lays out the UI for the "I don't consent" landing page.
+This script lays out the UI for the exit landing page
+if the user doesn't consent.
 """
 
 no_consent_ui = ui.nav_panel(

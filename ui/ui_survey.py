@@ -1,16 +1,10 @@
-from api import add_choices, get_choices, top_param
-import os
-from pathlib import Path
 from shiny import ui
-from htmltools import head_content
 
 """
-This script lays out the UI for the cartoon comparison page. It also does a
-bit of data prep via the API to ensure the database is storing essential data.
+This script lays out the UI for the candidate comparison page. Note
+that each pair of candidates is connected to a specific context.
+A context is the same as one arm of the multi-armed bandit.
 """
-
-# Set file paths relative to ui_cartoons.py instead of being absolute
-cur_dir = Path(__file__).resolve().parent
 
 # UI for the survey questions
 survey_ui = ui.nav_panel(
@@ -30,24 +24,13 @@ survey_ui = ui.nav_panel(
         ui.column(3),
     ),
     ui.br(),
-    # Survey tables
+    # NOTE: Survey tables get dynamically generated in `/ui/app.py`
     ui.row(
         ui.column(3),
-        # Make the two cartoons be clickable image buttons
             ui.column(
                 6,
                 ui.div(
-                    ui.HTML(
-                        "<table><tbody><tr><th></th><th>Candidate 1"
-                        + "</th><th>Candidate 2</th></tr><tr><td>Name</td>"
-                        + "<td>First Name</td><td>First Name<br></td></tr>"
-                        + "<tr><td>Ages</td><td>Age 1<br></td><td>Age 2<br>"
-                        + "</td></tr><tr><td>Political experience</td>"
-                        + "<td>Pol Experience 1</td><td>Pol Experience 2</td>"
-                        + "</tr><tr><td>Career experience</td>"
-                        + "<td>Career 1</td><td>Career 2</td></tr>"
-                        + "</tbody></table>"
-                    ),
+                    id="candidates"
                 ),
             ),
         ui.column(3),
