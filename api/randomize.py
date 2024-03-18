@@ -126,6 +126,7 @@ def randomize(batch_id: int, engine: Engine) -> dict:
 def randomize_context(batch_id: int, engine: Engine) -> int:
     """Randomize which bandit arm is shown to the user"""
     runif = float(rng.uniform(low = 0.0, high = 1.0, size = 1)[0])
+    print(f"runif: {runif}")
     with Session(engine) as session:
         batch = session.exec(select(Batch).where(Batch.id == batch_id)).one()
         batch_pi = [pi.model_dump() for pi in batch.pi]

@@ -36,12 +36,8 @@ parameters
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
 
-# Get the current batch
-cur_batch = current_batch()
-
 # Initialize the response form
 response_form = ResponseForm()
-response_form.batch_id = cur_batch["id"]
 
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
@@ -115,7 +111,10 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Update the response form
             response_form.consent = False
             # Submit the response form and handle batch/parameter updating
-            submit(response_form, cur_batch["id"], BATCH_SIZE, noconsent=True)
+            # Get the current batch
+            cur_batch = current_batch()
+            response_form.batch_id = cur_batch["id"]
+            submit(response_form, None, None, noconsent=True)
     
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
@@ -262,6 +261,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             await session.send_custom_message("scroll_top", "")
             # Retrieve the current context and dynamically generate the
             # survey tables. See `/ui/ui_survey.py`!
+            cur_batch = current_batch()
             cur_context = current_context(cur_batch["id"])
             ui.insert_ui(
                 ui.HTML(cur_context["html_content"]),
@@ -271,6 +271,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_survey")
             # Update the response form
             response_form.arm_id = cur_context["arm_id"]
+            response_form.batch_id = cur_batch["id"]
             older_candidate = which_is_older(cur_context)
             response_form.candidate_older_truth = older_candidate
             if resp_age_text != "":
@@ -341,7 +342,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Update the response form
             response_form.candidate_older = int(attention)
             # Submit the response form and handle batch/parameter updating
-            submit(response_form, cur_batch["id"], BATCH_SIZE)
+            submit(response_form, response_form.batch_id, BATCH_SIZE)
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image

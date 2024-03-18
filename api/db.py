@@ -338,6 +338,7 @@ def increment_batch(
                     select(Response)
                     .where(Response.arm_id == arm.id)
                     .where(Response.batch_id == batch_id)
+                    .where(Response.garbage != True)
                 )
                 .all()
             )

@@ -81,8 +81,8 @@ def initialize_bandit(bandit: dict) -> None:
 
 def submit(
     response_form: dict,
-    batch_id: int,
-    batch_size: int,
+    batch_id: int | None,
+    batch_size: int | None,
     noconsent: bool = False
 ) -> None:
     """
