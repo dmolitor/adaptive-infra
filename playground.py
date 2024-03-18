@@ -3,7 +3,8 @@ import requests as req
 
 """Interact with the API when testing locally"""
 
-base_url = "http://127.0.0.1:8000"
+# Set port element to 80 for Docker testing; 8000 for local testing
+base_url = "http://localhost:80"
 
 def json_pprint(x):
     print(json.dumps(x, indent=4))
@@ -13,9 +14,6 @@ print(req.get(base_url).text)
 
 # Retrieve the bandit table
 json_pprint(req.get(base_url + "/bandit").json())
-
-# Retrieve the parameters table
-json_pprint(req.get(base_url + "/bandit/parameters").json())
 
 # Print bandit parameters
 json_pprint(req.get(base_url + "/bandit/parameters").json())
@@ -42,7 +40,8 @@ example_form = {
     "race": "race_white",
     "ethnicity": "hisp_latin_spanish_no",
     "sex": "male",
-    "discriminated": True
+    "discriminated": True,
+    "garbage": False
 }
 req.post(base_url + "/responses", json=example_form).raise_for_status()
 
