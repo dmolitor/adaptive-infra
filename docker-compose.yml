@@ -51,7 +51,7 @@ services:
       - backend
     ports:
       - "${POSTGRES_CONTAINER_PORT}:${POSTGRES_HOST_PORT}"
-    user: "${POSTGRES_USER_NAME}"
+    user: "${POSTGRES_USER}"
 
 networks:
   frontend:
