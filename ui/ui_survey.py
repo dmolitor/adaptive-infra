@@ -1,4 +1,3 @@
-from utils_db import current_batch, current_context
 from shiny import ui
 
 """
@@ -6,10 +5,6 @@ This script lays out the UI for the candidate comparison page. Note
 that each pair of candidates is connected to a specific context.
 A context is the same as one arm of the multi-armed bandit.
 """
-
-# Get the current batch and context
-cur_batch = current_batch()
-cur_context = current_context(cur_batch["id"])
 
 # UI for the survey questions
 survey_ui = ui.nav_panel(
@@ -29,13 +24,13 @@ survey_ui = ui.nav_panel(
         ui.column(3),
     ),
     ui.br(),
-    # Survey tables
+    # NOTE: Survey tables get dynamically generated in `/ui/app.py`
     ui.row(
         ui.column(3),
             ui.column(
                 6,
                 ui.div(
-                    ui.HTML(cur_context["html_content"]),
+                    id="candidates"
                 ),
             ),
         ui.column(3),

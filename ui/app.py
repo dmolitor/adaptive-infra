@@ -3,12 +3,13 @@ from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
 from ui_consent import screening_questions
+from ui_demographics import demographics_ui
 from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
-from ui_postsurvey import postsurvey_ui, attention_ui
-from ui_survey import cur_context, survey_ui
-from utils_db import current_batch, submit_response, update_batch
+from ui_postsurvey import attention_ui
+from ui_survey import survey_ui
+from utils_db import current_batch, current_context, submit
 from utils_ui import (
     error,
     error_clear,
@@ -40,7 +41,6 @@ cur_batch = current_batch()
 
 # Initialize the response form
 response_form = ResponseForm()
-response_form.arm_id = cur_context["arm_id"]
 response_form.batch_id = cur_batch["id"]
 
 # This chunk lays out the design of the whole app
@@ -62,7 +62,7 @@ app_ui = ui.page_fluid(
         outro_ui,
         no_consent_ui,
         attention_ui,
-        postsurvey_ui,
+        demographics_ui,
         id="hidden_tabs"
     )
 )
@@ -114,14 +114,12 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_no_consent")
             # Update the response form
             response_form.consent = False
-            # Submit the response form
-            submit_response(response_form.generate_form())
-            # Update batches and corresponding parameters if appropriate
-            update_batch(cur_batch["id"], BATCH_SIZE)
+            # Submit the response form and handle batch/parameter updating
+            submit(response_form, cur_batch["id"], BATCH_SIZE, noconsent=True)
     
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
-    @reactive.event(input.next_page_survey)
+    @reactive.event(input.next_page_dem)
     async def _():
         # Grab the following values: captcha, prolific_id, location, commitment
         captcha = input.captcha()
@@ -173,7 +171,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             proceed = False
         if proceed:
             await session.send_custom_message("scroll_top", "")
-            ui.update_navs("hidden_tabs", selected="panel_survey")
+            ui.update_navs("hidden_tabs", selected="panel_demographics")
             # Update the response form
             response_form.prolific_id = prolific_id
             if location == "1":
@@ -190,66 +188,8 @@ def server(input: Inputs, output: Outputs, session: Session):
         else:
             await session.send_custom_message("scroll_bottom", "")
     
-    # Logic for 'Next Page' on the primary survey page
     @reactive.Effect
-    @reactive.event(input.next_page_attention)
-    async def _():
-        # Grab the following values: candidate
-        candidate = input.candidate()
-        # Clear all errors (there may be none; that's fine)
-        error_clear(id="candidate_status")
-        # Ensure candidate choice has been selected
-        if candidate not in ["0", "1"]:
-            error(
-                id="candidate_status",
-                selector="#candidate",
-                message="* This field is required",
-                where="beforeEnd"
-            )
-            await session.send_custom_message("scroll_bottom", "")
-        else:
-            await session.send_custom_message("scroll_top", "")
-            ui.update_navs("hidden_tabs", selected="panel_attention")
-            # Update the response form
-            response_form.candidate_preference = int(candidate)
-            older_candidate = which_is_older(cur_context)
-            response_form.candidate_older_truth = older_candidate
-            if response_form.candidate_preference == older_candidate:
-                response_form.discriminated = False
-            else:
-                response_form.discriminated = True
-            # Increment the parameters of the corresponding bandit arm
-            if response_form.discriminated:
-                #increment_params(cur_context["arm_id"], alpha=True)
-                pass
-            else:
-                pass
-                #increment_params(cur_context["arm_id"], beta=True)
-
-    @reactive.Effect
-    @reactive.event(input.next_page_postsurvey)
-    async def _():
-        # Grab the following values: attention
-        attention = input.attention()
-        # Clear all errors (there may be none; that's fine)
-        error_clear(id="attention_status")
-        # Ensure candidate choice has been selected
-        if attention not in ["0", "1", "2"]:
-            error(
-                id="attention_status",
-                selector="#attention",
-                message="* This field is required",
-                where="beforeEnd"
-            )
-            await session.send_custom_message("scroll_bottom", "")
-        else:
-            await session.send_custom_message("scroll_top", "")
-            ui.update_navs("hidden_tabs", selected="panel_postsurvey")
-            # Update the response form
-            response_form.candidate_older = int(attention)
-
-    @reactive.Effect
-    @reactive.event(input.next_page_end)
+    @reactive.event(input.next_page_survey)
     async def _():
         # Grab user input values from the survey
         resp_age_text = input.resp_age_text()
@@ -319,8 +259,20 @@ def server(input: Inputs, output: Outputs, session: Session):
             )
             proceed = False
         if proceed:
-            ui.update_navs("hidden_tabs", selected="panel_outro")
+            await session.send_custom_message("scroll_top", "")
+            # Retrieve the current context and dynamically generate the
+            # survey tables. See `/ui/ui_survey.py`!
+            cur_context = current_context(cur_batch["id"])
+            ui.insert_ui(
+                ui.HTML(cur_context["html_content"]),
+                selector="#candidates",
+                where="afterBegin"
+            )
+            ui.update_navs("hidden_tabs", selected="panel_survey")
             # Update the response form
+            response_form.arm_id = cur_context["arm_id"]
+            older_candidate = which_is_older(cur_context)
+            response_form.candidate_older_truth = older_candidate
             if resp_age_text != "":
                 response_form.age = int(resp_age_text)
             if "race_skip" not in resp_race:
@@ -336,12 +288,60 @@ def server(input: Inputs, output: Outputs, session: Session):
                 response_form.sex = "female"
             elif resp_sex == "1":
                 response_form.sex = "male"
-            # Submit the response form
-            submit_response(response_form.generate_form())
-            # Update batches and corresponding parameters if appropriate
-            update_batch(cur_batch["id"], BATCH_SIZE)
         else:
             await session.send_custom_message("scroll_bottom", "")
+    
+    # Logic for 'Next Page' on the primary survey page
+    @reactive.Effect
+    @reactive.event(input.next_page_attention)
+    async def _():
+        # Grab the following values: candidate
+        candidate = input.candidate()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(id="candidate_status")
+        # Ensure candidate choice has been selected
+        if candidate not in ["0", "1"]:
+            error(
+                id="candidate_status",
+                selector="#candidate",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            await session.send_custom_message("scroll_bottom", "")
+        else:
+            await session.send_custom_message("scroll_top", "")
+            ui.update_navs("hidden_tabs", selected="panel_attention")
+            # Update the response form
+            response_form.candidate_preference = int(candidate)
+            older_candidate = response_form.candidate_older_truth
+            if response_form.candidate_preference == older_candidate:
+                response_form.discriminated = False
+            else:
+                response_form.discriminated = True
+
+    @reactive.Effect
+    @reactive.event(input.next_page_outro)
+    async def _():
+        # Grab the following values: attention
+        attention = input.attention()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(id="attention_status")
+        # Ensure candidate choice has been selected
+        if attention not in ["0", "1", "2"]:
+            error(
+                id="attention_status",
+                selector="#attention",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            await session.send_custom_message("scroll_bottom", "")
+        else:
+            await session.send_custom_message("scroll_top", "")
+            ui.update_navs("hidden_tabs", selected="panel_outro")
+            # Update the response form
+            response_form.candidate_older = int(attention)
+            # Submit the response form and handle batch/parameter updating
+            submit(response_form, cur_batch["id"], BATCH_SIZE)
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image

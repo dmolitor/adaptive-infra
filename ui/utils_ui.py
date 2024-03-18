@@ -1,5 +1,7 @@
+import requests as req
 from shiny import Session, ui
 from urllib.parse import urlparse, parse_qs
+from utils_db import api_url
 
 """
 This script defines utility functions for interacting with the user interface.
@@ -23,6 +25,7 @@ class ResponseForm:
         self.ethnicity: str | None = None
         self.sex: str | None = None
         self.discriminated: bool | None = None
+        self.garbage: bool = False
     
     def generate_form(self) -> dict:
         """Generate a dictionary containing user responses"""
@@ -41,9 +44,34 @@ class ResponseForm:
             "race": self.race,
             "ethnicity": self.ethnicity,
             "sex": self.sex,
-            "discriminated": self.discriminated
+            "discriminated": self.discriminated,
+            "garbage": self.garbage
         }
         return out
+    
+    def validate_data(self) -> None:
+        # Indicator if the response is garbage or not
+        garbage = False
+        responses_req = req.get(api_url + "/responses")
+        responses_req.raise_for_status()
+        responses = responses_req.json()
+        prolific_ids = [response["prolific_id"] for response in responses]
+        # If a Prolific ID has already responded, mark as garbage
+        if self.prolific_id is not None and self.prolific_id in prolific_ids:
+            garbage = True
+        if not self.in_usa:
+            garbage = True
+        if self.commitment in ["no", "unsure"]:
+            garbage = True
+        if self.captcha is None or self.captcha.lower() != "purple":
+            garbage = True
+        # if self.candidate_older != self.candidate_older_truth:
+        #     garbage = True
+        if isinstance(self.age, float) or isinstance(self.age, int):
+            self.age = int(self.age)
+        else:
+            self.age = None
+        self.garbage = garbage
 
 def error(
         id: str,

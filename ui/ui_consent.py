@@ -82,7 +82,7 @@ screening_questions = ui.nav_panel(
         ui.column(6,
             ui.div(
                 {"style": "text-align: right;"},
-                ui.input_action_button("next_page_survey", "Next page \u27A4"),
+                ui.input_action_button("next_page_dem", "Next page \u27A4"),
             )
         ),
         ui.column(3)

@@ -79,10 +79,39 @@ def initialize_bandit(bandit: dict) -> None:
     if not bandit_req.json():
         req.post(api_url + "/bandit", json=bandit).raise_for_status()
 
+def submit(
+    response_form: dict,
+    batch_id: int,
+    batch_size: int,
+    noconsent: bool = False
+) -> None:
+    """
+    Handles the logistics of submitting the response form. If the form is
+    flagged as "noconsent" it will be submitted to the NoConsent table,
+    otherwise it is stored in the Responses table.
+    """
+    response_form.validate_data()
+    response_form_data = response_form.generate_form()
+    if noconsent:
+        submit_response_noconsent(response_form_data)
+    else:
+        submit_response(response_form_data)
+    # Update batches and corresponding parameters if appropriate
+    if not response_form.garbage:
+        update_batch(batch_id, batch_size)
+
 def submit_response(form: dict) -> None:
     """Submit a filled-out survey form via the API"""
     url = api_url + "/responses"
     req.post(url, json=form).raise_for_status()
+
+def submit_response_noconsent(form: dict) -> None:
+    """Submit a survey form when consent is declined via the API"""
+    url = api_url + "/responses/noconsent"
+    resp_form = {}
+    for key in ["batch_id", "consent"]:
+        resp_form[key] = form[key]
+    req.post(url, json=resp_form).raise_for_status()
 
 def update_batch(batch_id: int, remaining: int):
     """
