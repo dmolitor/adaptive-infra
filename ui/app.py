@@ -44,7 +44,7 @@ app_ui = ui.page_fluid(
     # Bootswatch Simplex theme: browse themes here [https://bootswatch.com/]
     shinyswatch.theme.simplex(),
     # Import CSS styling
-    ui.head_content(ui.include_css(cur_dir / "table-styles.css")),
+    ui.head_content(ui.include_css(cur_dir / "assets" / "table-styles.css")),
     # Add scripts to scroll to the top and bottom of the page
     scroll_top,
     scroll_bottom,
@@ -347,4 +347,4 @@ def server(input: Inputs, output: Outputs, session: Session):
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image
 # filepaths.
-app = App(app_ui, server, static_assets=str(cur_dir.parent / "assets"))
+app = App(app_ui, server, static_assets=str(cur_dir / "assets"))
