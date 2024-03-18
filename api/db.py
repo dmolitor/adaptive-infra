@@ -1,7 +1,7 @@
 from randomize import draw_arms
 from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel, select
-from tables import Bandit, Batch, Metadata, Parameters, Pi, Response 
+from tables import Bandit, Batch, Metadata, NoConsent, Parameters, Pi, Response 
 from typing import List
 
 """
@@ -102,6 +102,13 @@ def generate_bandit_metadata(
         # TODO: Is this last session.commit really necessary???
         session.commit()
 
+def generate_no_consent(batch_id: int, consent: bool, engine: Engine):
+    """Generate a row in the NoConsent database table"""
+    with Session(engine) as session:
+        no_consent_obj = NoConsent(batch_id=batch_id, consent=consent)
+        session.add(no_consent_obj)
+        session.commit()
+
 def generate_parameters(
     labels: List[str],
     batch_id: int,
@@ -194,6 +201,7 @@ def generate_response(
     ethnicity: str | None,
     sex: str | None,
     discriminated: bool | None,
+    garbage: bool,
     engine: None | Engine
 ):
     """Add a user's responses (filled out survey form) to the database"""
@@ -213,7 +221,8 @@ def generate_response(
             race=race,
             ethnicity=ethnicity,
             sex=sex,
-            discriminated=discriminated
+            discriminated=discriminated,
+            garbage=garbage
         )
         session.add(response_obj)
         session.commit()
@@ -268,6 +277,12 @@ def get_metadata(engine):
     with Session(engine) as session:
         metadata = session.exec(select(Metadata)).all()
     return metadata
+
+def get_no_consent(engine: Engine):
+    """Retrieves all records from the NoConsent table"""
+    with Session(engine) as session:
+        noconsent = session.exec(select(NoConsent)).all()
+    return noconsent
 
 def get_parameters(engine: Engine):
     """Retrieve a list of all bandit arm parameters"""

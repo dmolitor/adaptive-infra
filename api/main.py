@@ -4,12 +4,14 @@ from db import (
     generate_bandit,
     generate_bandit_metadata,
     generate_batch,
+    generate_no_consent,
     generate_response,
     get_bandit,
     get_batch,
     get_batches,
     get_current_batch,
     get_metadata,
+    get_no_consent,
     get_parameters,
     get_pi,
     get_responses,
@@ -17,7 +19,7 @@ from db import (
 )
 from fastapi import FastAPI
 from randomize import html_format, randomize
-from response_models import BanditJSON, BatchJSON, ParametersJSON, ResponseJSON
+from response_models import BanditJSON, BatchJSON, NoConsentJSON, ResponseJSON
 
 """
 This script creates the API and defines all the available endpoints.
@@ -42,6 +44,12 @@ def responses():
     responses = get_responses(engine)
     return responses
 
+# Endpoint to retrieve all records from the NoConsent table
+@api.get("/responses/noconsent")
+def no_consent():
+    noconsent = get_no_consent(engine)
+    return noconsent
+
 # Endpoint to send response data to
 @api.post("/responses")
 def response_gen(response: ResponseJSON):
@@ -61,6 +69,17 @@ def response_gen(response: ResponseJSON):
         ethnicity=response.ethnicity,
         sex=response.sex,
         discriminated=response.discriminated,
+        garbage=response.garbage,
+        engine=engine
+    )
+    return True
+
+# Endpoint to send responses with no consent to
+@api.post("/responses/noconsent")
+def no_consent_gen(response: NoConsentJSON):
+    generate_no_consent(
+        batch_id=response.batch_id,
+        consent=response.consent,
         engine=engine
     )
     return True

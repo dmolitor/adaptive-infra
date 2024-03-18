@@ -48,9 +48,8 @@ req.post(base_url + "/responses", json=example_form).raise_for_status()
 
 # Print all responses
 json_pprint(req.get(base_url + "/responses").json())
-
-# Get randomized context comparison data
-json_pprint(req.get(base_url + "/randomize").json())
+# Print all no-consent records
+json_pprint(req.get(base_url + "/responses/noconsent").json())
 
 # Get the current batch id
-cur_batch = req.get(base_url + "/bandit/batch/current/").json()
+json_pprint(req.get(base_url + "/bandit/batch/current/").json())

@@ -11,6 +11,11 @@ class BatchJSON(BaseModel):
     remaining: int
     active: bool
 
+class NoConsentJSON(BaseModel):
+    """Validate responses with no consent"""
+    batch_id: int
+    consent: bool
+
 class ResponseJSON(BaseModel):
     """
     A class for validating response data submitted via the API
@@ -30,6 +35,7 @@ class ResponseJSON(BaseModel):
     ethnicity: str | None
     sex: str | None
     discriminated: bool | None
+    garbage: bool
 
 class ParametersJSON(BaseModel):
     """Validate Parameters data"""
