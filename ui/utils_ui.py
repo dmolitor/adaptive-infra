@@ -13,6 +13,7 @@ class ResponseForm:
         self.consent: bool = None
         self.arm_id: int = None
         self.batch_id: int = None
+        self.context_batch_id: int = None
         self.prolific_id: str | None = None
         self.in_usa: bool | None = None
         self.commitment: str | None = None
@@ -33,6 +34,7 @@ class ResponseForm:
             "consent": self.consent,
             "arm_id": self.arm_id,
             "batch_id": self.batch_id,
+            "context_batch_id": self.context_batch_id,
             "prolific_id": self.prolific_id,
             "in_usa": self.in_usa,
             "commitment": self.commitment,

@@ -111,6 +111,7 @@ class Response(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
     batch_id: int = Field(foreign_key="batch.id")
+    context_batch_id: int
     consent: bool
     prolific_id: str | None
     in_usa: bool | None

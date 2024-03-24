@@ -57,6 +57,7 @@ def response_gen(response: ResponseJSON):
         consent=response.consent,
         arm_id=response.arm_id,
         batch_id=response.batch_id,
+        context_batch_id=response.context_batch_id,
         prolific_id=response.prolific_id,
         in_usa=response.in_usa,
         commitment=response.commitment,
