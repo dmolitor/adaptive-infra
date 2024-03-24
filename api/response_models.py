@@ -23,6 +23,7 @@ class ResponseJSON(BaseModel):
     consent: bool
     arm_id: int
     batch_id: int
+    context_batch_id: int
     prolific_id: str | None
     in_usa: bool | None
     commitment: str | None

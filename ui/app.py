@@ -271,7 +271,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_survey")
             # Update the response form
             response_form.arm_id = cur_context["arm_id"]
-            response_form.batch_id = cur_batch["id"]
+            response_form.context_batch_id = cur_batch["id"]
             older_candidate = which_is_older(cur_context)
             response_form.candidate_older_truth = older_candidate
             if resp_age_text != "":
@@ -341,6 +341,9 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_outro")
             # Update the response form
             response_form.candidate_older = int(attention)
+            # Ensure user is rolled into the current active batch
+            cur_batch = current_batch()
+            response_form.batch_id = cur_batch["id"]
             # Submit the response form and handle batch/parameter updating
             submit(response_form, response_form.batch_id, BATCH_SIZE)
 
