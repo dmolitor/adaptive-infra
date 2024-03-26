@@ -12,7 +12,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    image: adaptive_fastapi
+    image: djmolitor/adaptive_fastapi_polcand
     networks:
       - backend
       - frontend
@@ -30,7 +30,7 @@ services:
     environment:
       API_HOST_PORT: "${API_HOST_PORT}"
       APP_CONTAINER_PORT: "${APP_CONTAINER_PORT}"
-    image: adaptive_shiny
+    image: djmolitor/adaptive_shiny_polcand
     networks:
       - frontend
     ports:
@@ -49,8 +49,6 @@ services:
     image: "postgres:${POSTGRES_VERSION}"
     networks:
       - backend
-    ports:
-      - "${POSTGRES_CONTAINER_PORT}:${POSTGRES_HOST_PORT}"
     user: "${POSTGRES_USER}"
 
 networks:
