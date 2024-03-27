@@ -8,9 +8,7 @@ from typing import List
 
 def randomize_choice_order() -> List[int]:
     """Randomize whether the older candidate is shown first"""
-    age_orders = [[0,1],[-1,0]]
-    print(random.sample([0, 1], 1))
-    return age_orders[random.sample([0, 1], 1)]
+    return random.sample([0, 1], 1)
 
 def randomize_context(engine: Engine) -> int:
     """Randomize which bandit arm is shown to the user"""
