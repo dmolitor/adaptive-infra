@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  api:
+    env_file: .env
+    image: djmolitor/adaptive_fastapi_polcand
+    depends_on:
+      - database
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "${API_HOST_PORT}:${API_CONTAINER_PORT}"
+  
+  app:
+    env_file: .env
+    image: djmolitor/adaptive_shiny_polcand
+    depends_on:
+      - database
+    networks:
+      - frontend
+    ports:
+      - "${APP_HOST_PORT}:${APP_CONTAINER_PORT}"
+
+  database:
+    env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    image: "postgres:${POSTGRES_VERSION}"
+    networks:
+      - backend
+    user: postgres
+
+networks:
+  frontend:
+  backend:

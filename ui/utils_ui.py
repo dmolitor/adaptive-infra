@@ -115,9 +115,11 @@ def get_prolific_id(session: Session) -> str | None:
     prolific_id = (
         query_dict
         .get("PROLIFIC_PID")
-        .replace("{{", "")
-        .replace("}}", "")
     )
+    if isinstance(prolific_id, str):
+        prolific_id = prolific_id.replace("{{", "").replace("}}", "")
+    else:
+        return None
     return prolific_id
 
 def validate_age(age: tuple[str]) -> bool:
