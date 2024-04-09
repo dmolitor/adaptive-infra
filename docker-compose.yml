@@ -27,6 +27,11 @@ services:
         condition: service_healthy
       api:
         condition: service_started
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ui
+          target: /app
     environment:
       API_HOST_PORT: "${API_HOST_PORT}"
       APP_CONTAINER_PORT: "${APP_CONTAINER_PORT}"
