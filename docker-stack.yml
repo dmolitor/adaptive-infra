@@ -10,7 +10,7 @@ services:
       - backend
       - frontend
     ports:
-      - "${API_HOST_PORT}:${API_CONTAINER_PORT}"
+      - "80:80"
   
   app:
     env_file: .env
@@ -20,7 +20,7 @@ services:
     networks:
       - frontend
     ports:
-      - "${APP_HOST_PORT}:${APP_CONTAINER_PORT}"
+      - "8000:8000"
 
   database:
     env_file: .env
@@ -29,7 +29,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    image: "postgres:${POSTGRES_VERSION}"
+    image: "postgres:16.1-bullseye"
     networks:
       - backend
     user: postgres
