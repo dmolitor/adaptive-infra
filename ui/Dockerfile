@@ -9,6 +9,6 @@ WORKDIR /app
 
 COPY ./ /app
 
-EXPOSE ${APP_CONTAINER_PORT}
+EXPOSE 8000
 
-CMD uvicorn app:app --host 0.0.0.0 --port ${APP_CONTAINER_PORT}
+CMD uvicorn app:app --host 0.0.0.0 --port 8000
