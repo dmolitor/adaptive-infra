@@ -10,7 +10,7 @@ env_vars = os.environ
 
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
 # Get the outward facing port at which the API is exposed
-API_HOST_PORT = env_vars["API_HOST_PORT"]
+API_HOST_PORT = 80 # env_vars["API_HOST_PORT"]
 
 if ADAPTIVE_TESTING is not None and ADAPTIVE_TESTING:
     network = "localhost"
