@@ -2,7 +2,14 @@
 Infrastructure for adaptive learning with surveys and experiments.
 
 ## Requirements
-[Install Docker and Docker Compose](https://docs.docker.com/compose/install/).
+- [Packer](https://developer.hashicorp.com/packer)
+- [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+    - [Configure the Cli for SSO](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html#sso-configure-profile-token-auto-sso)
+- [Python]
+
+### For local development
+
+- [Docker Desktop](https://docs.docker.com/desktop/).
 
 ## Components
 The following Docker Compose services:

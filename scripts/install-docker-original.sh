@@ -1,8 +1,7 @@
 #!/bin/bash
 set -x
-
-# Remove any conflicting packages
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+sudo apt-get update
+sudo apt-get install -y gnome-terminal
 
 # Add Docker's official GPG key:
 sudo apt-get update
@@ -18,5 +17,9 @@ echo \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 
-# Install Docker stuff
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+# Download Docker DEB package
+## TODO: Set Docker Desktop version as a variable in .env
+sudo curl -o docker-desktop.deb https://desktop.docker.com/linux/main/amd64/145265/docker-desktop-4.29.0-amd64.deb
+
+# Install Docker Desktop
+sudo apt-get install -y --fix-broken ./docker-desktop.deb

@@ -1,13 +1,16 @@
 #!/bin/bash
 
-# Get the base directory
-BASE_DIR=$(dirname "$(dirname "$(readlink -f "$0")")")
+set -x
+
+# Clone the adaptive-infra repo
+sudo git clone https://github.com/dmolitor/adaptive-infra
+cd adaptive-infra
 
 # Initialize a one-node swarm
 sudo docker swarm init
 
 # Deploy the stack
-sudo docker stack deploy -c $BASE_DIR/docker-stack.yml adaptive_stack
+sudo docker stack deploy -c ./docker-stack.yml adaptive_stack
 
 echo "Waiting for services to be up..."
 while true; do
