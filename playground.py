@@ -3,8 +3,11 @@ import requests as req
 
 """Interact with the API when testing locally"""
 
-# Set port element to 80 for Docker testing; 8000 for local testing
+# Set port element to 80 for Docker testing;
 base_url = "http://localhost:80"
+# Run the lines below if this has been deployed to a server
+# server_ip = "54.198.218.73"
+# base_url = f"http://{server_ip}:80"
 
 def json_pprint(x):
     print(json.dumps(x, indent=4))
