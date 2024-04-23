@@ -14,6 +14,3 @@ sudo docker swarm init
 
 # Deploy the stack
 envsubst < docker-stack.yml | sudo docker stack deploy --detach=false -c - adaptive_stack
-
-# Scale up the app service
-sudo docker service scale adaptive_stack_app=2

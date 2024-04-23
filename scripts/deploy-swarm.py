@@ -1,9 +1,19 @@
 import boto3
-from dotenv import load_dotenv
 from fabric.connection import Connection
 import os
 from pathlib import Path
 import random
+import sys
+import time
+import traceback
+
+args = sys.argv[1:]
+if not args:
+    raise ValueError("No command line arguments detected; three expected")
+BUFFER = 20
+INSTANCE_TYPE = args[0]
+POSTGRES_VOLUME = args[1]
+SWARM_N = int(args[2])
 
 base_dir = Path(__file__).resolve().parent.parent
 # For interactive use run the line below
@@ -129,7 +139,7 @@ def server_exists(client, name: str = "AdaptiveServer") -> bool:
     else:
         return False
 
-def launch_image(client, type: str = "t2.micro", verbose: bool = True) -> bool:
+def launch_image(client, verbose: bool = True) -> bool:
     # Prepping configuration
     if verbose:
         print("Preparing instance configuration ...")
@@ -139,7 +149,7 @@ def launch_image(client, type: str = "t2.micro", verbose: bool = True) -> bool:
     adaptive_security_group = get_group_id("AdaptiveExperiment", client)
     instance_params = {
         "ImageId": adaptive_ami,
-        "InstanceType": type,
+        "InstanceType": INSTANCE_TYPE,
         "KeyName": adaptive_key,
         "MinCount": 1,
         "MaxCount": 1,
@@ -267,11 +277,10 @@ def launch_swarm(instance_id: str, client) -> None:
     con.put(base_dir / "scripts" / "swarm-launch-aws.sh", target_dir)
     # Execute the script
     con.run("sudo /bin/bash swarm-launch-aws.sh")
+    # Scale up the swarm
+    con.run(f"sudo docker service scale adaptive_stack_app={SWARM_N}")
 
 if __name__ == "__main__":
-
-    load_dotenv(base_dir / ".env")
-    env_vars = os.environ
 
     # Create EC2 service
     ec2 = boto3.client("ec2")
@@ -282,14 +291,18 @@ if __name__ == "__main__":
 
     if not server_running:
         # Launch the server
-        instance_id = launch_image(ec2, type="t2.medium")
+        instance_id = launch_image(ec2)
         try:
+            print("Mounting volume")
             # Mount the volume
-            mount_volume_to_drive(instance_id, env_vars["POSTGRES_VOLUME"], ec2)
+            mount_volume_to_drive(instance_id, POSTGRES_VOLUME, ec2)
+            print(f"Drive mounted. Buffering for {BUFFER} seconds")
+            time.sleep(BUFFER)
+            print("Launching swarm")
             # Launch the adaptive app swarm
             launch_swarm(instance_id, ec2)
-        except:
-            print("Failed to successfully provision the instance. Terminating ...")
+        except Exception:
+            print(traceback.format_exc())
             response = ec2.terminate_instances(
                 InstanceIds=[instance_id]
             )
