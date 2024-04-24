@@ -6,7 +6,7 @@ import requests as req
 # Set port element to 80 for Docker testing;
 base_url = "http://localhost:80"
 # Execute the lines below if api is hosted on a server
-# server_ip = "34.201.138.172"
+# server_ip = "12.345.678.910"
 # base_url = f"http://{server_ip}:80"
 
 def json_pprint(x):

@@ -253,7 +253,7 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     if not volume_is_mtd:
         print(f"Mounting /dev/xvdd at {volume} ...")
         con.run(f"sudo mount /dev/xvdd {volume}")
-    # Give the file system correct permissions and ownership
+    # Give the file system correct permissions
     con.run(f"sudo chmod -R 777 {volume}")
     # Terminate SSH connection
     con.close()
@@ -292,13 +292,13 @@ if __name__ == "__main__":
         # Launch the server
         instance_id = launch_image(ec2)
         try:
-            print("Mounting volume")
-            # Mount the volume
-            mount_volume_to_drive(instance_id, POSTGRES_VOLUME, ec2)
-            print(f"Drive mounted. Buffering for {BUFFER} seconds")
+            print(f"Volume attached. Buffering for {BUFFER} seconds")
             time.sleep(BUFFER)
-            print("Launching swarm")
+            # Mount the volume
+            print("Mounting volume")
+            mount_volume_to_drive(instance_id, POSTGRES_VOLUME, ec2)
             # Launch the adaptive app swarm
+            print("Launching swarm")
             launch_swarm(instance_id, ec2)
         except Exception:
             print(traceback.format_exc())

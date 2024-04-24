@@ -43,6 +43,32 @@ aws-volume: aws-sso-login venv
   source {{justfile_directory()}}/.venv/bin/activate
   python {{justfile_directory()}}/scripts/create-volume.py
 
+# Check if AWS CLI is installed
+check-aws:
+  @aws --version
+
+# Check all deploy dependencies
+check-dependencies: check-aws check-just check-packer check-python
+
+# Check if Docker is installed
+check-docker:
+  @docker --version
+
+# Check if just is installed
+check-just:
+  @just --version
+
+# Check if HCL Packer is installed
+check-packer:
+  @packer --version
+
+# Check if Python is installed
+check-python:
+  @python3 --version
+
+# Deploy the application to an AWS-hosted server
+deploy: check-dependencies venv aws-swarm-launch
+
 # Build and push the app and api Docker images
 docker-build:
   docker login
