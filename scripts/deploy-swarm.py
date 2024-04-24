@@ -240,8 +240,6 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     if not data_dir_exists:
         print(f"Creating mountpoint for device /dev/xvdd at {volume} ...")
         con.run(f"sudo mkdir {volume}")
-        # Give the file system correct permissions and ownership
-        con.run(f"sudo chmod -R 777 {volume}")
     # Check if the volume is mounted yet
     volume_is_mtd = (
         con
@@ -255,6 +253,8 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     if not volume_is_mtd:
         print(f"Mounting /dev/xvdd at {volume} ...")
         con.run(f"sudo mount /dev/xvdd {volume}")
+    # Give the file system correct permissions and ownership
+    con.run(f"sudo chmod -R 777 {volume}")
     # Terminate SSH connection
     con.close()
 
