@@ -36,9 +36,6 @@ parameters
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
 
-# Initialize the response form
-response_form = ResponseForm()
-
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
     # Bootswatch Simplex theme: browse themes here [https://bootswatch.com/]
@@ -64,8 +61,12 @@ app_ui = ui.page_fluid(
 )
 
 def server(input: Inputs, output: Outputs, session: Session):
+
     """This function handles all the logic for the app"""
     
+    # Initialize the response form
+    response_form = ResponseForm()
+
     # Logic for 'Next Page' button on landing page.
     # 
     # This function uses the async keyword because we want to call the 
