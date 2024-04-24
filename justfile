@@ -25,6 +25,11 @@ aws-swarm-launch: aws-ami-build aws-security-group aws-volume
   source {{justfile_directory()}}/.venv/bin/activate
   python {{justfile_directory()}}/scripts/deploy-swarm.py {{instance_type}} {{postgres_volume}} {{swarm_n}}
 
+# Terminate any active Docker Swarm AWS server
+aws-swarm-terminate: aws-sso-login
+  source {{justfile_directory()}}/.venv/bin/activate
+  python {{justfile_directory()}}/scripts/terminate-swarm.py
+
 # Configure AWS SSO
 aws-sso-configure:
   aws configure sso
@@ -48,7 +53,7 @@ check-aws:
   @aws --version
 
 # Check all deploy dependencies
-check-dependencies: check-aws check-just check-packer check-python
+check-dependencies: check-aws check-just check-packer check-python venv
 
 # Check if Docker is installed
 check-docker:
@@ -69,11 +74,14 @@ check-python:
 # Deploy the application to an AWS-hosted server
 deploy: check-dependencies venv aws-swarm-launch
 
-# Build and push the app and api Docker images
-docker-build:
+# Build the app and api Docker images
+docker-build-and-push:
   docker login
   docker compose build -q
   docker compose push -q
+
+# Terminate the running application and corresponding AWS server.
+terminate: check-python venv aws-swarm-terminate
 
 # Activate virtual environment and install Python dependencies
 venv:
