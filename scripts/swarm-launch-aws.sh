@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Clone the adaptive-infra repo
-sudo git clone -b aws https://github.com/dmolitor/adaptive-infra
+sudo git clone https://github.com/dmolitor/adaptive-infra
 cd adaptive-infra
 
 # Load environment variables
