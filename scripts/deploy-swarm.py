@@ -241,8 +241,7 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
         print(f"Creating mountpoint for device /dev/xvdd at {volume} ...")
         con.run(f"sudo mkdir {volume}")
         # Give the file system correct permissions and ownership
-        con.run(f"sudo chmod --reference=./ {volume}")
-        con.run(f"sudo chown --reference=./ {volume}")
+        con.run(f"sudo chmod -R 777 {volume}")
     # Check if the volume is mounted yet
     volume_is_mtd = (
         con
