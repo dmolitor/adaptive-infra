@@ -15,16 +15,16 @@ Infrastructure for adaptive learning with surveys and experiments.
 ## Services
 The application is comprised of the following services:
 
-- app:
+- **app**:
     This service builds and hosts the front-end survey form. See
     `/ui` for corresponding code.
 
-- api:
+- **api**:
     This service builds and hosts the API that handles all interactions
     between the survey form and the database on the backend. See `/api`
     for corresponding code.
 
-- database:
+- **database**:
     This service utilizes the official PostgreSQL Docker image to store
     all relevant data and user responses.
 
