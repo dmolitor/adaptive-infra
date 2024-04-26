@@ -2,6 +2,7 @@ from init_db import BATCH_SIZE
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
+import time
 from ui_consent import screening_questions
 from ui_demographics import demographics_ui
 from ui_intro import intro_ui
@@ -262,8 +263,16 @@ def server(input: Inputs, output: Outputs, session: Session):
             await session.send_custom_message("scroll_top", "")
             # Retrieve the current context and dynamically generate the
             # survey tables. See `/ui/ui_survey.py`!
-            cur_batch = current_batch()
-            cur_context = current_context(cur_batch["id"])
+            
+            # Catch any errors at this step
+            try:
+                cur_batch = current_batch()
+                cur_context = current_context(cur_batch["id"])
+            except:
+                time.sleep(2)
+                cur_batch = current_batch()
+                cur_context = current_context(cur_batch["id"])
+
             ui.insert_ui(
                 ui.HTML(cur_context["html_content"]),
                 selector="#candidates",
