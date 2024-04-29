@@ -99,6 +99,12 @@ def error_clear(id: str | list[str]):
     for i in id:
         ui.remove_ui(selector=f"#{i}")
 
+def empty_age(age: tuple[str]) -> bool:
+    """Check if age is a non-empty result"""
+    if age == ():
+        return True
+    return False
+
 def get_prolific_id(session: Session) -> str | None:
     """Retrieves the current user's Prolific ID from the URL"""
     url = session.input[".clientdata_url_search"]()
@@ -124,9 +130,12 @@ def get_prolific_id(session: Session) -> str | None:
 
 def validate_age(age: tuple[str]) -> bool:
     """Check if age is a non-empty result"""
-    if age == ():
+    try:
+        for a in age:
+            int(a)
+        return True
+    except:
         return False
-    return True
 
 def validate_race(race: tuple[str]) -> bool:
     """Check if race is a non-empty result"""

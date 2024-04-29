@@ -12,6 +12,7 @@ from ui_postsurvey import attention_ui
 from ui_survey import survey_ui
 from utils_db import current_batch, current_context, submit
 from utils_ui import (
+    empty_age,
     error,
     error_clear,
     get_prolific_id,
@@ -208,7 +209,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         # Are we ready to proceed?
         proceed = True
         # Ensure one and only one age value is entered
-        if resp_age_text == "" and not validate_age(resp_age_check):
+        if resp_age_text == "" and empty_age(resp_age_check):
             error(
                 id="resp_age_status",
                 selector="#resp_age_check",
@@ -216,11 +217,19 @@ def server(input: Inputs, output: Outputs, session: Session):
                 where="beforeEnd"
             )
             proceed = False
-        elif resp_age_text != "" and validate_age(resp_age_check):
+        elif resp_age_text != "" and not empty_age(resp_age_check):
             error(
                 id="resp_age_status",
                 selector="#resp_age_check",
                 message="* Invalid entry",
+                where="beforeEnd"
+            )
+            proceed = False
+        elif not validate_age(resp_age_text):
+            error(
+                id="resp_age_status",
+                selector="#resp_age_check",
+                message="* Please enter a valid age",
                 where="beforeEnd"
             )
             proceed = False
@@ -273,7 +282,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                     cur_context = current_context(cur_batch["id"])
                     success = True
                 except:
-                    time.sleep(0.1)
+                    time.sleep(0.05)
                     cur_batch = current_batch()
                     cur_context = current_context(cur_batch["id"])
                     iter += 1

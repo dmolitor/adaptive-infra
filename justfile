@@ -3,6 +3,7 @@ set dotenv-load := true
 instance_type := env_var('AWS_INSTANCE_TYPE')
 postgres_volume := env_var('POSTGRES_VOLUME')
 swarm_n := env_var('AWS_SWARM_N')
+python := justfile_directory() / ".venv" / "bin" / "python"
 
 # List all available recipes
 default:
@@ -16,19 +17,16 @@ aws-ami-build: aws-sso-login
   -packer build {{justfile_directory()}}/aws-docker.pkr.hcl
 
 # Provision an AWS security group
-aws-security-group: aws-sso-login venv
-  source {{justfile_directory()}}/.venv/bin/activate
-  python {{justfile_directory()}}/scripts/create-security-group.py
+aws-security-group: aws-sso-login
+  {{python}} {{justfile_directory()}}/scripts/create-security-group.py
 
 # Launch a Docker Swarm on an AWS EC2 server
 aws-swarm-launch: aws-ami-build aws-security-group aws-volume
-  source {{justfile_directory()}}/.venv/bin/activate
-  python {{justfile_directory()}}/scripts/deploy-swarm.py {{instance_type}} {{postgres_volume}} {{swarm_n}}
+  {{python}} {{justfile_directory()}}/scripts/deploy-swarm.py {{instance_type}} {{postgres_volume}} {{swarm_n}}
 
 # Terminate any active Docker Swarm AWS server
 aws-swarm-terminate: aws-sso-login
-  source {{justfile_directory()}}/.venv/bin/activate
-  python {{justfile_directory()}}/scripts/terminate-swarm.py
+  {{python}} {{justfile_directory()}}/scripts/terminate-swarm.py
 
 # Configure AWS SSO
 aws-sso-configure:
@@ -36,17 +34,11 @@ aws-sso-configure:
 
 # AWS SSO login
 aws-sso-login profile="default":
-  #!/usr/bin/env zsh
-  SSO_ACCOUNT=$(aws sts get-caller-identity --query "Account" --profile {{profile}})
-  #you can add a better check, but this is just an idea for quick check
-  if [ ! ${#SSO_ACCOUNT} -eq 14 ];  then 
-    aws sso login ;
-  fi
+  aws sso --profile {{profile}} login
 
 # Provision an AWS EBS volume
-aws-volume: aws-sso-login venv
-  source {{justfile_directory()}}/.venv/bin/activate
-  python {{justfile_directory()}}/scripts/create-volume.py
+aws-volume: aws-sso-login
+  {{python}} {{justfile_directory()}}/scripts/create-volume.py
 
 # Check if AWS CLI is installed
 check-aws:
@@ -72,7 +64,7 @@ check-python:
   @python3 --version
 
 # Deploy the application to an AWS-hosted server
-deploy: check-dependencies venv aws-swarm-launch
+deploy: check-dependencies aws-swarm-launch
 
 # Build the app and api Docker images
 docker-build-and-push:
