@@ -265,13 +265,20 @@ def server(input: Inputs, output: Outputs, session: Session):
             # survey tables. See `/ui/ui_survey.py`!
             
             # Catch any errors at this step
-            try:
-                cur_batch = current_batch()
-                cur_context = current_context(cur_batch["id"])
-            except:
-                time.sleep(2)
-                cur_batch = current_batch()
-                cur_context = current_context(cur_batch["id"])
+            iter = 0
+            success = False
+            while iter < 5 and not success:
+                try:
+                    cur_batch = current_batch()
+                    cur_context = current_context(cur_batch["id"])
+                    success = True
+                except:
+                    time.sleep(0.1)
+                    cur_batch = current_batch()
+                    cur_context = current_context(cur_batch["id"])
+                    iter += 1
+            if not success:
+                raise ConnectionError("API query failed after 5 retries")
 
             ui.insert_ui(
                 ui.HTML(cur_context["html_content"]),
