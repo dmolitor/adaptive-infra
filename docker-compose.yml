@@ -43,6 +43,11 @@ services:
       - frontend
     ports:
       - "${APP_CONTAINER_PORT}:${APP_HOST_PORT}"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./ui
+          target: /app
 
   database:
     container_name: database

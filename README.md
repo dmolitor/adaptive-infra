@@ -35,6 +35,11 @@ To run the services locally:
 docker compose up -d
 ```
 
+To run using [Compose Watch](https://docs.docker.com/compose/file-watch/):
+```shell
+docker compose watch
+```
+
 To shut everything down:
 ```shell
 docker compose down
