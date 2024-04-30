@@ -3,6 +3,7 @@ set dotenv-load := true
 instance_type := env_var('AWS_INSTANCE_TYPE')
 postgres_volume := env_var('POSTGRES_VOLUME')
 swarm_n := env_var('AWS_SWARM_N')
+prolific_token := env_var('PROLIFIC_TOKEN')
 python := justfile_directory() / ".venv" / "bin" / "python"
 
 # List all available recipes
@@ -71,6 +72,10 @@ docker-build-and-push:
   docker login
   docker compose build -q
   docker compose push -q
+
+# List all Prolific studies in the Adaptive Conjoint project
+prolific-studies: venv
+  {{python}} {{justfile_directory()}}/scripts/prolific-studies-list.py {{prolific_token}}
 
 # Terminate the running application and corresponding AWS server.
 terminate: check-python venv aws-swarm-terminate
