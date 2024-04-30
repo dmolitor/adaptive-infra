@@ -1,6 +1,7 @@
 import requests as req
 import os
 import time
+from utils_prolific import pause_prolific_study
 
 """
 This script defines utility functions for interacting with the database.
@@ -12,6 +13,8 @@ env_vars = os.environ
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
 # Get the outward facing port at which the API is exposed
 API_HOST_PORT = env_vars["API_HOST_PORT"]
+STOPPAGE_THRESHOLD = float(env_vars["STOPPAGE_THRESHOLD"])
+
 
 if ADAPTIVE_TESTING is not None and ADAPTIVE_TESTING:
     network = "localhost"
@@ -52,6 +55,21 @@ def current_context(batch_id: int):
     ## TODO: Remove this at some point (currently helpful for interactive use)
     print(f'context:\n{context}')
     return context
+
+@with_retry
+def current_pi():
+    """Retrieves the current-batch individual pi values"""
+    cur_batch = current_batch()
+    resp = req.get(api_url + "/bandit/batch")
+    resp.raise_for_status()
+    [cur_params] = [
+        x for x in resp.json() 
+        if x["batch"]["id"] == cur_batch["id"]
+    ]
+    pi_vals = [x["pi"] for x in cur_params["pi"]]
+    for i in range(len(pi_vals) - 1, 0, -1):
+        pi_vals[i] = pi_vals[i] - pi_vals[(i - 1)]
+    return pi_vals
 
 @with_retry
 def decrement_batch_remaining(batch_id: int, active: bool = True):
@@ -141,6 +159,8 @@ def submit_response_noconsent(form: dict) -> None:
 def update_batch(batch_id: int, remaining: int):
     """
     Decrement batch counter, and create new batch/pi/parameters as necessary.
+    Also check if any arm exceeds the stoppage threshold. If so, pause the
+    Prolific survey.
     """
     batch = get_batch_id(batch_id)
     ready_to_update = batch["remaining"] <= 1
@@ -148,6 +168,12 @@ def update_batch(batch_id: int, remaining: int):
     if ready_to_update and batch_is_active:
         decrement_batch_remaining(batch["id"], active=False)
         increment_batch(batch["id"], remaining=remaining)
+        # Check if any of the new arm pi values exceed stoppage threshold
+        pi_vals = current_pi()
+        print(f"Current pi vals: {pi_vals}")
+        if any([x >= STOPPAGE_THRESHOLD for x in pi_vals]):
+            print("About to pause the study")
+            pause_prolific_study()
     elif ready_to_update and not batch_is_active:
         decrement_batch_remaining(batch["id"], active=False)
     else:

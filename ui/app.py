@@ -2,7 +2,6 @@ from init_db import BATCH_SIZE
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
-import time
 from ui_consent import screening_questions
 from ui_demographics import demographics_ui
 from ui_intro import intro_ui
