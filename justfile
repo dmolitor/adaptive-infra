@@ -75,7 +75,7 @@ docker-build-and-push:
 
 # List all Prolific studies in the Adaptive Conjoint project
 prolific-studies: venv
-  {{python}} {{justfile_directory()}}/scripts/prolific-studies-list.py {{prolific_token}}
+  @{{python}} {{justfile_directory()}}/scripts/prolific-studies-list.py {{prolific_token}}
 
 # Terminate the running application and corresponding AWS server.
 terminate: check-python venv aws-swarm-terminate
