@@ -1,3 +1,5 @@
+#from asyncio import sleep
+from time import sleep
 from init_db import BATCH_SIZE
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
@@ -10,10 +12,13 @@ from ui_outro import outro_ui
 from ui_postsurvey import attention_ui
 from ui_survey import survey_ui
 from utils_db import current_batch, current_context, submit
+from utils_prolific import prolific_redirect
 from utils_ui import (
+    empty_age,
     error,
     error_clear,
     get_prolific_id,
+    redirect_url,
     scroll_bottom,
     scroll_top,
     validate_age,
@@ -36,9 +41,6 @@ parameters
 # Set file paths relative to app.py instead of being absolute
 cur_dir = Path(__file__).resolve().parent
 
-# Initialize the response form
-response_form = ResponseForm()
-
 # This chunk lays out the design of the whole app
 app_ui = ui.page_fluid(
     # Bootswatch Simplex theme: browse themes here [https://bootswatch.com/]
@@ -46,6 +48,7 @@ app_ui = ui.page_fluid(
     # Import CSS styling
     ui.head_content(ui.include_css(cur_dir / "assets" / "table-styles.css")),
     # Add scripts to scroll to the top and bottom of the page
+    redirect_url,
     scroll_top,
     scroll_bottom,
     ui.br(),
@@ -64,8 +67,12 @@ app_ui = ui.page_fluid(
 )
 
 def server(input: Inputs, output: Outputs, session: Session):
+
     """This function handles all the logic for the app"""
     
+    # Initialize the response form
+    response_form = ResponseForm()
+
     # Logic for 'Next Page' button on landing page.
     # 
     # This function uses the async keyword because we want to call the 
@@ -106,8 +113,8 @@ def server(input: Inputs, output: Outputs, session: Session):
             response_form.consent = True
         # Otherwise, bring them to the exit page
         else:
-            await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_no_consent")
+            await session.send_custom_message("scroll_top", "")
             # Update the response form
             response_form.consent = False
             # Submit the response form and handle batch/parameter updating
@@ -115,6 +122,11 @@ def server(input: Inputs, output: Outputs, session: Session):
             cur_batch = current_batch()
             response_form.batch_id = cur_batch["id"]
             submit(response_form, None, None, noconsent=True)
+            # Redirect to the Prolific No-Consent page
+            await session.send_custom_message(
+                "redirect_url",
+                prolific_redirect("noconsent")
+            )
     
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
@@ -169,14 +181,17 @@ def server(input: Inputs, output: Outputs, session: Session):
             )
             proceed = False
         if proceed:
-            await session.send_custom_message("scroll_top", "")
-            ui.update_navs("hidden_tabs", selected="panel_demographics")
             # Update the response form
             response_form.prolific_id = prolific_id
             if location == "1":
                 response_form.in_usa = True
             else:
                 response_form.in_usa = False
+                ## TODO: make an "Invalid" landing page
+                await session.send_custom_message(
+                    "redirect_url",
+                    prolific_redirect("invalid")
+                )
             if commitment == "1":
                 response_form.commitment = "yes"
             elif commitment == "2":
@@ -184,6 +199,9 @@ def server(input: Inputs, output: Outputs, session: Session):
             else:
                 response_form.commitment = "no"
             response_form.captcha = captcha
+            # Move to next page
+            await session.send_custom_message("scroll_top", "")
+            ui.update_navs("hidden_tabs", selected="panel_demographics")
         else:
             await session.send_custom_message("scroll_bottom", "")
     
@@ -206,7 +224,7 @@ def server(input: Inputs, output: Outputs, session: Session):
         # Are we ready to proceed?
         proceed = True
         # Ensure one and only one age value is entered
-        if resp_age_text == "" and not validate_age(resp_age_check):
+        if resp_age_text == "" and empty_age(resp_age_check):
             error(
                 id="resp_age_status",
                 selector="#resp_age_check",
@@ -214,11 +232,19 @@ def server(input: Inputs, output: Outputs, session: Session):
                 where="beforeEnd"
             )
             proceed = False
-        elif resp_age_text != "" and validate_age(resp_age_check):
+        elif resp_age_text != "" and not empty_age(resp_age_check):
             error(
                 id="resp_age_status",
                 selector="#resp_age_check",
                 message="* Invalid entry",
+                where="beforeEnd"
+            )
+            proceed = False
+        elif not validate_age(resp_age_text):
+            error(
+                id="resp_age_status",
+                selector="#resp_age_check",
+                message="* Please enter a valid age",
                 where="beforeEnd"
             )
             proceed = False
@@ -263,6 +289,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             # survey tables. See `/ui/ui_survey.py`!
             cur_batch = current_batch()
             cur_context = current_context(cur_batch["id"])
+
             ui.insert_ui(
                 ui.HTML(cur_context["html_content"]),
                 selector="#candidates",
@@ -337,7 +364,6 @@ def server(input: Inputs, output: Outputs, session: Session):
             )
             await session.send_custom_message("scroll_bottom", "")
         else:
-            await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_outro")
             # Update the response form
             response_form.candidate_older = int(attention)
@@ -346,6 +372,11 @@ def server(input: Inputs, output: Outputs, session: Session):
             response_form.batch_id = cur_batch["id"]
             # Submit the response form and handle batch/parameter updating
             submit(response_form, response_form.batch_id, BATCH_SIZE)
+            # Now redirect to Prolific
+            await session.send_custom_message(
+                "redirect_url",
+                prolific_redirect("valid")
+            )
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image

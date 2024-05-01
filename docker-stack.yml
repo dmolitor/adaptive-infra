@@ -24,12 +24,16 @@ services:
 
   database:
     env_file: .env
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
     healthcheck:
       test: ["CMD-SHELL", "pg_isready"]
       interval: 10s
       timeout: 5s
       retries: 5
     image: "postgres:${POSTGRES_VERSION}"
+    volumes:
+      - $POSTGRES_VOLUME:/var/lib/postgresql/data
     networks:
       - backend
     user: postgres
