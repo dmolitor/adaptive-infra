@@ -14,7 +14,7 @@ outro_ui = ui.nav_panel(
             ui.div(
                 {
                     "style": (
-                        "font-size: 1vw; height: 10vh; display: flex; "
+                        "font-size: 1.5vw; height: 80vh; display: flex; "
                         + "flex-direction: column; align-items: center; "
                         + "justify-content: center;"
                     )

@@ -11,7 +11,6 @@ To see all the api endpoints utilized here, see `/api/main.py`.
 env_vars = os.environ
 
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
-# Get the outward facing port at which the API is exposed
 API_HOST_PORT = env_vars["API_HOST_PORT"]
 STOPPAGE_THRESHOLD = float(env_vars["STOPPAGE_THRESHOLD"])
 
@@ -172,7 +171,6 @@ def update_batch(batch_id: int, remaining: int):
         pi_vals = current_pi()
         print(f"Current pi vals: {pi_vals}")
         if any([x >= STOPPAGE_THRESHOLD for x in pi_vals]):
-            print("About to pause the study")
             pause_prolific_study()
     elif ready_to_update and not batch_is_active:
         decrement_batch_remaining(batch["id"], active=False)

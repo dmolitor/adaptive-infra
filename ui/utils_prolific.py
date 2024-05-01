@@ -17,7 +17,7 @@ def pause_prolific_study() -> None:
     )
     resp.raise_for_status()
 
-def prolific_redirect(case):
+def prolific_redirect(case) -> str:
     base_url = "https://app.prolific.com/submissions/complete?cc="
     if case == "valid":
         url = base_url + PROLIFIC_COMPLETION_VALID
