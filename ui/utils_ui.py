@@ -159,7 +159,16 @@ def which_is_older(context: dict) -> int:
     else:
         return 1
 
-# Define small JS scripts to scroll to the top and bottom of a page
+# Define small JS scripts to scroll to the top and bottom of a page and to
+# redirect to an external URL
+
+redirect_url = ui.tags.script(
+    """
+    Shiny.addCustomMessageHandler('redirect_url', function(message) {
+        window.location = message;
+    });
+    """
+)
 
 scroll_bottom = ui.tags.script(
     """

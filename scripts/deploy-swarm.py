@@ -274,6 +274,7 @@ def launch_swarm(instance_id: str, client) -> None:
     # Upload swarm launch script to server
     target_dir = con.run("echo $HOME", hide=True).stdout.strip()
     con.put(base_dir / "scripts" / "swarm-launch-aws.sh", target_dir)
+    con.put(base_dir / ".env", target_dir)
     # Execute the script
     con.run("sudo /bin/bash swarm-launch-aws.sh")
     # Scale up the swarm

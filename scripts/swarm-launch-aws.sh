@@ -4,6 +4,10 @@
 sudo git clone https://github.com/dmolitor/adaptive-infra
 cd adaptive-infra
 
+# Copy the correct .env file into the repo
+sudo rm .env
+sudo mv ../.env ./
+
 # Load environment variables
 set -a
 source .env

@@ -1,4 +1,5 @@
 from shiny import ui
+from utils_prolific import prolific_redirect
 
 """
 This script lays out the UI for the exit landing page
@@ -19,10 +20,12 @@ no_consent_ui = ui.nav_panel(
                 ui.br(),
                 ui.br(),
                 ui.markdown(
-                    "*As you do not wish to participate in this study, please "
-                    + "close this survey and return your submission on "
-                    + "Prolific by selecting the 'Stop without completing' "
-                    + "button.*"
+                    "*As you do not wish to participate in this study, you "
+                    + "will be redirected automatically to Prolific shortly. "
+                    + "If you are not redirected automatically, you may "
+                    + "also click the following link to return to Prolific: "
+                    + f"[{prolific_redirect('noconsent')}]"
+                    + f"({prolific_redirect('noconsent')}).*"
                 )
             ),
         ),
