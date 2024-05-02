@@ -38,6 +38,7 @@ def draw_arms(params: dict, n_sim: int = int(1e6), max: bool = True) -> dict:
     ```
     """
     array_list = []
+    ## TODO: same complaint. Want to make this distribution agnostic.
     for value in params.values():
         # For each arm generate `n_sim` draws from the posterior beta dist.
         array_list.append(
@@ -66,30 +67,37 @@ def html_format(input: dict) -> str:
     first = input["first"]
     second = input["second"]
     names = (
-        f"<tr><td>Name</td><td>{first['name']}</td>"
+        f"<tr><td>Host name</td><td>{first['name']}</td>"
         + f"<td>{second['name']}<br></td></tr>"
     )
-    ages = (
-        f"<tr><td>Ages</td><td>{first['age']}<br></td>"
-        + f"<td>{second['age']}<br></td></tr>"
+    descriptions = (
+        f"<tr><td>Description</td><td>{first['description']}<br></td>"
+        + f"<td>{second['description']}<br></td></tr>"
     )
-    pexp = (
-        "<tr><td>Political experience</td>"
-        + f"<td>{first['political_experience']}</td>"
-        + f"<td>{second['political_experience']}</td></tr>"
+    costs = (
+        "<tr><td>Cost</td>"
+        + f"<td>${str(first['cost'])}</td>"
+        + f"<td>${str(second['cost'])}</td></tr>"
     )
-    cexp = (
-        "<tr><td>Career experience</td>"
-        + f"<td>{first['career_experience']}</td>"
-        + f"<td>{second['career_experience']}</td></tr>"
+    distances = (
+        "<tr><td>Distance</td>"
+        + f"<td>{first['distance']}</td>"
+        + f"<td>{second['distance']}</td></tr>"
+    )
+    ratings = (
+        "<tr><td>Host rating</td>"
+        + f"<td>{str(first['host_rating'])}</td>"
+        + f"<td>{str(second['host_rating'])}</td></tr>"
     )
     # Names and ages should always show up first
     context_data = [names]
     # Randomize the order of the other two elements
-    randomized_context_data = randomize_context_items([ages, pexp, cexp])
+    randomized_context_data = randomize_context_items(
+        [descriptions, costs, distances, ratings]
+    )
     html_content = (
-        "<table><tbody><tr><th></th><th>Candidate 1"
-        + "</th><th>Candidate 2</th></tr>"
+        "<table><tbody><tr><th></th><th>Option 1"
+        + "</th><th>Option 2</th></tr>"
         + "".join(context_data + randomized_context_data)
         + "</tbody></table>"
     )

@@ -1,5 +1,3 @@
-#from asyncio import sleep
-from time import sleep
 from init_db import BATCH_SIZE
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
@@ -21,6 +19,7 @@ from utils_ui import (
     redirect_url,
     scroll_bottom,
     scroll_top,
+    selected_race,
     validate_age,
     validate_race,
     which_is_older,
@@ -299,8 +298,9 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Update the response form
             response_form.arm_id = cur_context["arm_id"]
             response_form.context_batch_id = cur_batch["id"]
-            older_candidate = which_is_older(cur_context)
-            response_form.candidate_older_truth = older_candidate
+            response_form.selected_race = selected_race(cur_context)
+            # older_candidate = which_is_older(cur_context)
+            # response_form.candidate_older_truth = older_candidate
             if resp_age_text != "":
                 response_form.age = int(resp_age_text)
             if "race_skip" not in resp_race:
@@ -323,15 +323,15 @@ def server(input: Inputs, output: Outputs, session: Session):
     @reactive.Effect
     @reactive.event(input.next_page_attention)
     async def _():
-        # Grab the following values: candidate
-        candidate = input.candidate()
+        # Grab the following values: option
+        option = input.option()
         # Clear all errors (there may be none; that's fine)
-        error_clear(id="candidate_status")
+        error_clear(id="option_status")
         # Ensure candidate choice has been selected
-        if candidate not in ["0", "1"]:
+        if option not in ["0", "1"]:
             error(
-                id="candidate_status",
-                selector="#candidate",
+                id="option_status",
+                selector="#option",
                 message="* This field is required",
                 where="beforeEnd"
             )
@@ -340,12 +340,12 @@ def server(input: Inputs, output: Outputs, session: Session):
             await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_attention")
             # Update the response form
-            response_form.candidate_preference = int(candidate)
-            older_candidate = response_form.candidate_older_truth
-            if response_form.candidate_preference == older_candidate:
-                response_form.discriminated = False
-            else:
+            response_form.option_preference = int(option)
+            # older_candidate = response_form.candidate_older_truth
+            if response_form.selected_race == "black":
                 response_form.discriminated = True
+            else:
+                response_form.discriminated = False
 
     @reactive.Effect
     @reactive.event(input.next_page_outro)

@@ -85,17 +85,23 @@ def generate_bandit_metadata(
                 .one()
             )
             arm_meta = meta[label]
+            ## TODO: This entire part could be abstracted to create
+            ## Metadata table from an arbitrarty set of metadata
             names = arm_meta["names"]
-            ages = arm_meta["ages"]
-            pexps = arm_meta["political_exp"]
-            cexps = arm_meta["career_exp"]
-            for name, age, pexp, cexp in zip(names, ages, pexps, cexps):
+            race = arm_meta["race"]
+            desc = arm_meta["description"]
+            cost = arm_meta["cost"]
+            dist = arm_meta["distance"]
+            rating = arm_meta["host_rating"]
+            for name, race, desc, cost, dist, rating in zip(names, race, desc, cost, dist, rating):
                 metadata_obj = Metadata(
                     arm_id=arm.id,
                     name=name,
-                    age=age,
-                    political_experience=pexp,
-                    career_experience=cexp
+                    race=race,
+                    description=desc,
+                    cost=cost,
+                    distance=dist,
+                    host_rating=rating
                 )
                 session.add(metadata_obj)
                 session.commit()
@@ -141,6 +147,9 @@ def generate_parameters(
                 .one()
             )
             arm_params = params[label]
+            ## TODO: Is there a way to make this distribution agnostic.
+            ## E.g. we could switch from Bernoulli with beta prior to
+            ## a Gaussian with a Gaussian prior and the code stays the same?
             param_obj = Parameters(
                 arm_id=arm.id,
                 batch_id=batch_id,
@@ -194,9 +203,9 @@ def generate_response(
     in_usa: bool | None,
     commitment: str | None,
     captcha: str | None,
-    candidate_preference: int | None,
-    candidate_older: int | None,
-    candidate_older_truth: int | None,
+    option_preference: int | None,
+    # option_pricier: int | None,
+    # option_pricier_truth: int | None,
     age: int | None,
     race: str | None,
     ethnicity: str | None,
@@ -216,9 +225,9 @@ def generate_response(
             in_usa=in_usa,
             commitment=commitment,
             captcha=captcha,
-            candidate_preference=candidate_preference,
-            candidate_older=candidate_older,
-            candidate_older_truth=candidate_older_truth,
+            option_preference=option_preference,
+            # candidate_older=candidate_older,
+            # candidate_older_truth=candidate_older_truth,
             age=age,
             race=race,
             ethnicity=ethnicity,
@@ -346,6 +355,8 @@ def increment_batch(
             )
             successes = 0
             failures = 0
+            ## TODO: related to the above. Is there a way to update the
+            ## posterior distribution in a distribution-agnostic way?
             for response in arm_batch_responses:
                 if response.discriminated is True:
                     successes += 1

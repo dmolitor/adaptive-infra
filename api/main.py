@@ -34,7 +34,7 @@ api = FastAPI()
 # Base endpoint to check if it's alive.
 @api.get("/")
 def root():
-    return "Hello World!"
+    return "Welcome to our adaptive experiment!"
 
 # Endpoints for working with responses ------------------------------------
 
@@ -62,9 +62,9 @@ def response_gen(response: ResponseJSON):
         in_usa=response.in_usa,
         commitment=response.commitment,
         captcha=response.captcha,
-        candidate_preference=response.candidate_preference,
-        candidate_older=response.candidate_older,
-        candidate_older_truth=response.candidate_older_truth,
+        option_preference=response.option_preference,
+        # candidate_older=response.candidate_older,
+        # candidate_older_truth=response.candidate_older_truth,
         age=response.age,
         race=response.race,
         ethnicity=response.ethnicity,

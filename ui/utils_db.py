@@ -119,7 +119,7 @@ def initialize_bandit(bandit: dict) -> None:
 
 @with_retry
 def submit(
-    response_form: dict,
+    response_form,
     batch_id: int | None,
     batch_size: int | None,
     noconsent: bool = False

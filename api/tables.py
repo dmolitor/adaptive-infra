@@ -40,9 +40,11 @@ class Metadata(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
     name: str
-    age: int
-    political_experience: str
-    career_experience: str
+    race: str
+    description: str
+    cost: int
+    distance: str
+    host_rating: str
     arm: Bandit = Relationship(back_populates="meta")
 
 class NoConsent(SQLModel, table=True):
@@ -117,9 +119,9 @@ class Response(SQLModel, table=True):
     in_usa: bool | None
     commitment: str | None
     captcha: str | None
-    candidate_preference: int | None
-    candidate_older: int | None
-    candidate_older_truth: int | None
+    option_preference: int | None
+    # candidate_older: int | None
+    # candidate_older_truth: int | None
     age: int | None
     race: str | None
     ethnicity: str | None

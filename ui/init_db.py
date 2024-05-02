@@ -1,3 +1,4 @@
+import os
 from utils_db import initialize_bandit
 
 """
@@ -6,45 +7,43 @@ initializes the batch size for the current experiment.
 """
 
 # Set the batch size!
-BATCH_SIZE = 1
+BATCH_SIZE = int(os.environ["BATCH_SIZE"])
 
 # Initialize the bandit table if it does not already exist
 # Initialize the bandit (all its arms and corresponding parameters)
 bandit = {
-    "labels": ["arm1", "arm2", "arm3", "arm4"],
+    "labels": ["arm1"],
     "params": {
-        "arm1": {"alpha": 1, "beta": 1},
-        "arm2": {"alpha": 1, "beta": 1},
-        "arm3": {"alpha": 1, "beta": 1},
-        "arm4": {"alpha": 1, "beta": 1}
+        "arm1": {"alpha": 1, "beta": 1}
     },
     "meta": {
         "arm1": {
-            "names": ["Laurie Schmitt", "Allison O'Connell"],
-            "ages": [49, 62],
-            "political_exp": ["Member of Congress", "State legislator"],
-            "career_exp": ["Restaurant owner", "Small business owner"]
-        },
-        "arm2": {
-            "names": ["Laurie Schmitt", "Allison O'Connell"],
-            "ages": [49, 62],
-            "political_exp": ["No experience", "No experience"],
-            "career_exp": ["Restaurant owner", "Small business owner"]
-        },
-        "arm3": {
-            "names": ["Tanisha Rivers", "Keisha Mosely"],
-            "ages": [70, 26],
-            "political_exp": ["Member of Congress", "State legislator"],
-            "career_exp": ["Restaurant owner", "Small business owner"]
-        },
-        "arm4": {
-            "names": ["Tanisha Rivers", "Keisha Mosely"],
-            "ages": [49, 62],
-            "political_exp": ["No experience", "No experience"],
-            "career_exp": ["Restaurant owner", "Small business owner"]
+            "names": ["Rasheed Booker", "Neil Schwartz"],
+            "race": ["black", "non-black"],
+            "description": [
+                (
+                    "Neat and clean, modern and cozy 1 bedroom apartment, "
+                    + "including an office/living room area. Beautiful "
+                    + "craftsman style single family home."
+                ),
+                (
+                    "Stay in a spacious and bright apartment in our "
+                    + "comfortable single-family home! Near to restaurants, "
+                    + "attractions, and the beach."
+                )
+            ],
+            "cost": [250, 300],
+            "distance": [
+                "15 minute walk from city center",
+                (
+                    "5 minutes walk from the beach, "
+                    + "5 minute drive to the city center."
+                )
+            ],
+            "host_rating": [4.95, 4.92]
         }
     },
-    "pi": {"arm1": 0.25, "arm2": 0.5, "arm3": 0.75, "arm4": 1},
+    "pi": {"arm1": 1},
     "batch": {"remaining": BATCH_SIZE, "active": True}
 }
 initialize_bandit(bandit)

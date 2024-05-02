@@ -28,9 +28,9 @@ class ResponseJSON(BaseModel):
     in_usa: bool | None
     commitment: str | None
     captcha: str | None
-    candidate_preference: int | None
-    candidate_older: int | None
-    candidate_older_truth: int | None
+    option_preference: int | None
+    # candidate_older: int | None
+    # candidate_older_truth: int | None
     age: int | None
     race: str | None
     ethnicity: str | None
