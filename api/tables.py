@@ -40,7 +40,6 @@ class Metadata(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
     name: str
-    race: str
     description: str
     cost: int
     distance: str

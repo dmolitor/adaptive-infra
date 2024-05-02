@@ -22,8 +22,8 @@ class ResponseForm:
         # self.candidate_older: int | None = None
         # self.candidate_older_truth: int | None = None
         self.age: int | None = None
-        self.race: str | None = None
         self.ethnicity: str | None = None
+        self.race: str | None = None
         self.sex: str | None = None
         self.discriminated: bool | None = None
         self.garbage: bool = False
@@ -39,12 +39,12 @@ class ResponseForm:
             "in_usa": self.in_usa,
             "commitment": self.commitment,
             "captcha":self.captcha,
-            "option_preference": self.option_preferenceui,
+            "option_preference": self.option_preference,
             # "candidate_older": self.candidate_older,
             # "candidate_older_truth": self.candidate_older_truth,
             "age": self.age,
-            "race": self.race,
             "ethnicity": self.ethnicity,
+            "race": self.race,
             "sex": self.sex,
             "discriminated": self.discriminated,
             "garbage": self.garbage
@@ -159,13 +159,14 @@ def which_is_older(context: dict) -> int:
     else:
         return 1
 
-def selected_race(context: dict, selected: int) -> bool:
-    """Return the race of the user-selected option"""
-    contexts = context["context"]
-    if selected == 0:
-        return contexts["first"]["race"]
+def which_is_black(context: dict) -> int:
+    context = context["context"]
+    candidate1 = context["first"]
+    candidate2 = context["second"]
+    if candidate1["name"] in ["Rasheed Booker"]:
+        return 0
     else:
-        return contexts["second"]["race"]
+        return 1
 
 # Define small JS scripts to scroll to the top and bottom of a page and to
 # redirect to an external URL

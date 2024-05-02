@@ -88,16 +88,14 @@ def generate_bandit_metadata(
             ## TODO: This entire part could be abstracted to create
             ## Metadata table from an arbitrarty set of metadata
             names = arm_meta["names"]
-            race = arm_meta["race"]
             desc = arm_meta["description"]
             cost = arm_meta["cost"]
             dist = arm_meta["distance"]
             rating = arm_meta["host_rating"]
-            for name, race, desc, cost, dist, rating in zip(names, race, desc, cost, dist, rating):
+            for name, desc, cost, dist, rating in zip(names, desc, cost, dist, rating):
                 metadata_obj = Metadata(
                     arm_id=arm.id,
                     name=name,
-                    race=race,
                     description=desc,
                     cost=cost,
                     distance=dist,

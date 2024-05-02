@@ -1,6 +1,7 @@
 import requests as req
 import os
 import time
+import traceback
 from utils_prolific import pause_prolific_study
 
 """
@@ -31,10 +32,11 @@ def with_retry(f):
             try:
                 result = f(*args, **kwargs)
                 return result
-            except:
+            except Exception:
                 time.sleep(0.05)
                 iter += 1
-        raise ConnectionError("API query failed after 5 retries")
+                exception_message = traceback.format_exc()
+        raise ConnectionError(exception_message)
     return wrapper
 
 @with_retry

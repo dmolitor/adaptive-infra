@@ -19,7 +19,6 @@ bandit = {
     "meta": {
         "arm1": {
             "names": ["Rasheed Booker", "Neil Schwartz"],
-            "race": ["black", "non-black"],
             "description": [
                 (
                     "Neat and clean, modern and cozy 1 bedroom apartment, "
