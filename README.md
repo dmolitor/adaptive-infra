@@ -16,12 +16,12 @@ Infrastructure for adaptive learning with surveys and experiments.
 The application is comprised of the following services:
 
 - **app**:
-    This service builds and hosts the front-end survey form. See
+    This service builds and hosts the front-end survey form using [Shiny for Python](https://shiny.posit.co/py/). See
     `/ui` for corresponding code.
 
 - **api**:
     This service builds and hosts the API that handles all interactions
-    between the survey form and the database on the backend. See `/api`
+    between the survey form and the database on the backend using [FastAPI](https://fastapi.tiangolo.com/). See `/api`
     for corresponding code.
 
 - **database**:
