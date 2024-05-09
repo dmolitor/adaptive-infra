@@ -19,6 +19,11 @@ services:
       - frontend
     ports:
       - "${API_CONTAINER_PORT}:${API_HOST_PORT}"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./api
+          target: /api
   
   app:
     build:

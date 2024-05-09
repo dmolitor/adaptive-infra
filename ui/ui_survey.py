@@ -15,8 +15,10 @@ survey_ui = ui.nav_panel(
             ui.div(
                 {"style": "text-align: justify;"},
                 ui.HTML(
-                    "Imagine you are booking a short-term rental on an online "
-                    + "platform for a vacation. Which posting would you pick?"
+                    "Please read the descriptions of the fictional "
+                    + "immigrants carefully. Then, please indicate which "
+                    + "of the two you would personally prefer to see "
+                    + "admitted to the United States."
                 )
             ),
         ),
@@ -40,8 +42,11 @@ survey_ui = ui.nav_panel(
         ui.column(6,
             ui.input_radio_buttons(
                 id="option",
-                label="Which of these two options do you prefer?",
-                choices={0: "Option 1", 1: "Option 2"},
+                label=(
+                    "Which of these two immigrant profiles would you select "
+                    + "for admission to the United States?"
+                ),
+                choices={0: "Immigrant 1", 1: "Immigrant 2"},
                 selected="",
                 width="100%"
             )
@@ -55,7 +60,7 @@ survey_ui = ui.nav_panel(
             6,
             ui.div(
                 {"style": "text-align: right;"},
-                ui.input_action_button("next_page_outro", "Next page \u27A4"),
+                ui.input_action_button("next_page_attention", "Next page \u27A4"),
             )
         ),
         ui.column(3)

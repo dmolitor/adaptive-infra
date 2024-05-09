@@ -66,38 +66,37 @@ def html_format(input: dict) -> str:
     """Format the candidates as an HTML table for the UI"""
     first = input["first"]
     second = input["second"]
-    names = (
-        f"<tr><td>Host name</td><td>{first['name']}</td>"
-        + f"<td>{second['name']}<br></td></tr>"
+    prior_trips = (
+        f"<tr><td>Prior trips to the U.S.</td><td>{first['prior_trips']}</td>"
+        + f"<td>{second['prior_trips']}<br></td></tr>"
     )
-    descriptions = (
-        f"<tr><td>Description</td><td>{first['description']}<br></td>"
-        + f"<td>{second['description']}<br></td></tr>"
+    education = (
+        f"<tr><td>Education</td><td>{first['education']}<br></td>"
+        + f"<td>{second['education']}<br></td></tr>"
     )
-    costs = (
-        "<tr><td>Cost</td>"
-        + f"<td>${str(first['cost'])}</td>"
-        + f"<td>${str(second['cost'])}</td></tr>"
+    reason = (
+        f"<tr><td>Reason for application</td><td>{first['reason']}<br></td>"
+        + f"<td>{second['reason']}<br></td></tr>"
     )
-    distances = (
-        "<tr><td>Distance</td>"
-        + f"<td>{first['distance']}</td>"
-        + f"<td>{second['distance']}</td></tr>"
+    origin = (
+        "<tr><td>Country of origin</td>"
+        + f"<td>{first['origin']}</td>"
+        + f"<td>{second['origin']}</td></tr>"
     )
-    ratings = (
-        "<tr><td>Host rating</td>"
-        + f"<td>{str(first['host_rating'])}</td>"
-        + f"<td>{str(second['host_rating'])}</td></tr>"
+    profession = (
+        "<tr><td>Profession</td>"
+        + f"<td>{first['profession']}</td>"
+        + f"<td>{second['profession']}</td></tr>"
     )
-    # Names and ages should always show up first
-    context_data = [names]
+    # This is for any features that should always show up first
+    context_data = []
     # Randomize the order of the other two elements
     randomized_context_data = randomize_context_items(
-        [descriptions, costs, distances, ratings]
+        [prior_trips, education, reason, origin, profession]
     )
     html_content = (
-        "<table><tbody><tr><th></th><th>Option 1"
-        + "</th><th>Option 2</th></tr>"
+        "<table><tbody><tr><th></th><th>Immigrant 1"
+        + "</th><th>Immigrant 2</th></tr>"
         + "".join(context_data + randomized_context_data)
         + "</tbody></table>"
     )

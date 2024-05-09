@@ -19,8 +19,8 @@ class ResponseForm:
         self.commitment: str | None = None
         self.captcha: str | None = None
         self.option_preference: int | None = None
-        # self.candidate_older: int | None = None
-        # self.candidate_older_truth: int | None = None
+        self.option_attention: int | None = None
+        self.option_attention_truth: int | None = None
         self.age: int | None = None
         self.ethnicity: str | None = None
         self.race: str | None = None
@@ -40,8 +40,8 @@ class ResponseForm:
             "commitment": self.commitment,
             "captcha":self.captcha,
             "option_preference": self.option_preference,
-            # "candidate_older": self.candidate_older,
-            # "candidate_older_truth": self.candidate_older_truth,
+            "option_attention": self.option_attention,
+            "option_attention_truth": self.option_attention_truth,
             "age": self.age,
             "ethnicity": self.ethnicity,
             "race": self.race,
@@ -67,8 +67,8 @@ class ResponseForm:
             garbage = True
         if self.captcha is None or self.captcha.lower() != "purple":
             garbage = True
-        # if self.candidate_older != self.candidate_older_truth:
-        #     garbage = True
+        if self.option_attention != self.option_attention_truth:
+            garbage = True
         if isinstance(self.age, float) or isinstance(self.age, int):
             self.age = int(self.age)
         else:
@@ -159,11 +159,11 @@ def which_is_older(context: dict) -> int:
     else:
         return 1
 
-def which_is_black(context: dict) -> int:
+def which_is_college_ed(context: dict) -> int:
     context = context["context"]
     candidate1 = context["first"]
     candidate2 = context["second"]
-    if candidate1["name"] in ["Rasheed Booker"]:
+    if candidate1["education"] == "College degree":
         return 0
     else:
         return 1

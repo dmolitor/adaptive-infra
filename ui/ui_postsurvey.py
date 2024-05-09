@@ -16,10 +16,10 @@ attention_ui = ui.nav_panel(
         ui.column(6,
             ui.input_radio_buttons(
                 id="attention",
-                label=ui.HTML("Which candidate was older?"),
+                label=ui.HTML("Which immigrant had a higher education level?"),
                 choices={
-                    0: "Candidate 1",
-                    1: "Candidate 2",
+                    0: "Immigrant 1",
+                    1: "Immigrant 2",
                     2: "I don't know"
                 },
                 selected="",

@@ -87,19 +87,19 @@ def generate_bandit_metadata(
             arm_meta = meta[label]
             ## TODO: This entire part could be abstracted to create
             ## Metadata table from an arbitrarty set of metadata
-            names = arm_meta["names"]
-            desc = arm_meta["description"]
-            cost = arm_meta["cost"]
-            dist = arm_meta["distance"]
-            rating = arm_meta["host_rating"]
-            for name, desc, cost, dist, rating in zip(names, desc, cost, dist, rating):
+            prior_trips = arm_meta["prior_trips"]
+            education = arm_meta["education"]
+            reason = arm_meta["reason"]
+            origin = arm_meta["origin"]
+            profession = arm_meta["profession"]
+            for trips, ed, reason, origin, prof in zip(prior_trips, education, reason, origin, profession):
                 metadata_obj = Metadata(
                     arm_id=arm.id,
-                    name=name,
-                    description=desc,
-                    cost=cost,
-                    distance=dist,
-                    host_rating=rating
+                    prior_trips=trips,
+                    education=ed,
+                    reason=reason,
+                    origin=origin,
+                    profession=prof
                 )
                 session.add(metadata_obj)
                 session.commit()
@@ -202,8 +202,8 @@ def generate_response(
     commitment: str | None,
     captcha: str | None,
     option_preference: int | None,
-    # option_pricier: int | None,
-    # option_pricier_truth: int | None,
+    option_attention: int | None,
+    option_attention_truth: int | None,
     age: int | None,
     race: str | None,
     ethnicity: str | None,
@@ -224,8 +224,8 @@ def generate_response(
             commitment=commitment,
             captcha=captcha,
             option_preference=option_preference,
-            # candidate_older=candidate_older,
-            # candidate_older_truth=candidate_older_truth,
+            option_attention=option_attention,
+            option_attention_truth=option_attention_truth,
             age=age,
             race=race,
             ethnicity=ethnicity,

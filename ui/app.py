@@ -7,7 +7,7 @@ from ui_demographics import demographics_ui
 from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
-# from ui_postsurvey import attention_ui
+from ui_postsurvey import attention_ui
 from ui_survey import survey_ui
 from utils_db import current_batch, current_context, submit
 from utils_prolific import prolific_redirect
@@ -21,7 +21,7 @@ from utils_ui import (
     scroll_top,
     validate_age,
     validate_race,
-    which_is_black,
+    which_is_college_ed,
     ResponseForm
 )
 
@@ -59,6 +59,7 @@ app_ui = ui.page_fluid(
         outro_ui,
         no_consent_ui,
         demographics_ui,
+        attention_ui,
         id="hidden_tabs"
     )
 )
@@ -296,9 +297,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Update the response form
             response_form.arm_id = cur_context["arm_id"]
             response_form.context_batch_id = cur_batch["id"]
-            response_form.candidate_black = which_is_black(cur_context)
-            # older_candidate = which_is_older(cur_context)
-            # response_form.candidate_older_truth = older_candidate
+            response_form.option_attention_truth = which_is_college_ed(cur_context)
             if resp_age_text != "":
                 response_form.age = int(resp_age_text)
             if "race_skip" not in resp_race:
@@ -319,7 +318,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     
     # Logic for 'Next Page' on the primary survey page
     @reactive.Effect
-    @reactive.event(input.next_page_outro)
+    @reactive.event(input.next_page_attention)
     async def _():
         # Grab the following values: option
         option = input.option()
@@ -335,15 +334,34 @@ def server(input: Inputs, output: Outputs, session: Session):
             )
             await session.send_custom_message("scroll_bottom", "")
         else:
-            ui.update_navs("hidden_tabs", selected="panel_outro")
+            ui.update_navs("hidden_tabs", selected="panel_attention")
             # Update the response form
             response_form.option_preference = int(option)
-            
-            # older_candidate = response_form.candidate_older_truth
-            if response_form.candidate_black == int(option):
-                response_form.discriminated = False
-            else:
+            if response_form.option_attention_truth == int(option):
                 response_form.discriminated = True
+            else:
+                response_form.discriminated = False
+
+    @reactive.Effect
+    @reactive.event(input.next_page_outro)
+    async def _():
+        # Grab the following values: attention
+        attention = input.attention()
+        # Clear all errors (there may be none; that's fine)
+        error_clear(id="attention_status")
+        # Ensure candidate choice has been selected
+        if attention not in ["0", "1", "2"]:
+            error(
+                id="attention_status",
+                selector="#attention",
+                message="* This field is required",
+                where="beforeEnd"
+            )
+            await session.send_custom_message("scroll_bottom", "")
+        else:
+            ui.update_navs("hidden_tabs", selected="panel_outro")
+            # Update the response form
+            response_form.option_attention = int(attention)
             # Ensure user is rolled into the current active batch
             cur_batch = current_batch()
             response_form.batch_id = cur_batch["id"]
@@ -354,37 +372,6 @@ def server(input: Inputs, output: Outputs, session: Session):
                 "redirect_url",
                 prolific_redirect("valid")
             )
-
-    # @reactive.Effect
-    # @reactive.event(input.next_page_outro)
-    # async def _():
-    #     # Grab the following values: attention
-    #     attention = input.attention()
-    #     # Clear all errors (there may be none; that's fine)
-    #     error_clear(id="attention_status")
-    #     # Ensure candidate choice has been selected
-    #     if attention not in ["0", "1", "2"]:
-    #         error(
-    #             id="attention_status",
-    #             selector="#attention",
-    #             message="* This field is required",
-    #             where="beforeEnd"
-    #         )
-    #         await session.send_custom_message("scroll_bottom", "")
-    #     else:
-    #         ui.update_navs("hidden_tabs", selected="panel_outro")
-    #         # Update the response form
-    #         response_form.candidate_older = int(attention)
-    #         # Ensure user is rolled into the current active batch
-    #         cur_batch = current_batch()
-    #         response_form.batch_id = cur_batch["id"]
-    #         # Submit the response form and handle batch/parameter updating
-    #         submit(response_form, response_form.batch_id, BATCH_SIZE)
-    #         # Now redirect to Prolific
-    #         await session.send_custom_message(
-    #             "redirect_url",
-    #             prolific_redirect("valid")
-    #         )
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image
