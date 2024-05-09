@@ -210,26 +210,33 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     con.open()
     if not con.is_connected:
         raise ConnectionError(f"Failed to connect to {con.user}@{con.host}")
-    # Make sure that device /dev/xvdd exists
-    device_exists = (
-        con
-        .run("[ -b /dev/xvdd ] && echo true || echo false", hide=True)
-        .stdout
-        .strip() == "true"
-    )
-    if not device_exists:
-        raise FileNotFoundError("Device /dev/xvdd was not found")
+    # Make sure that device /dev/xvdd or /dev/nvme1n1 exists
+    devices = ["/dev/xvdd", "/dev/nvme1n1"]
+    target_device = []
+    for device in devices:
+        device_exists = (
+            con
+            .run(f"[ -b {device} ] && echo true || echo false", hide=True)
+            .stdout
+            .strip() == "true"
+        )
+        if device_exists:
+            target_device.append(device)
+    if not target_device:
+        raise FileNotFoundError("Neither device /dev/xvdd nor /dev/nvme1n1 was found")
+    elif len(target_device) == 2:
+        raise FileExistsError("Both devices (/dev/xvdd; /dev/nvme1n1) were found")
     # Check whether the drive has a file system yet
     filesys = (
         con
-        .run("sudo file -s /dev/xvdd", hide=True)
+        .run(f"sudo file -s {target_device[0]}", hide=True)
         .stdout
         .strip()
-        .removeprefix("/dev/xvdd: ")
+        .removeprefix(f"{target_device[0]}: ")
     )
     if filesys == "data":
-        print("Creating a file system on device /dev/xvdd ...")
-        con.run("sudo mkfs -t xfs /dev/xvdd")
+        print(f"Creating a file system on device {target_device[0]} ...")
+        con.run(f"sudo mkfs -t xfs {target_device[0]}")
     # Make a directory where we will mount the drive
     data_dir_exists = (
         con
@@ -238,21 +245,21 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
         .strip() == "true"
     )
     if not data_dir_exists:
-        print(f"Creating mountpoint for device /dev/xvdd at {volume} ...")
+        print(f"Creating mountpoint for device {target_device[0]} at {volume} ...")
         con.run(f"sudo mkdir {volume}")
     # Check if the volume is mounted yet
     volume_is_mtd = (
         con
         .run(
-            "sudo lsblk -o MOUNTPOINT /dev/xvdd | grep -v MOUNTPOINT",
+            f"sudo lsblk -o MOUNTPOINT {target_device[0]} | grep -v MOUNTPOINT",
             hide=True
         )
         .stdout
         .strip() != ""
     )
     if not volume_is_mtd:
-        print(f"Mounting /dev/xvdd at {volume} ...")
-        con.run(f"sudo mount /dev/xvdd {volume}")
+        print(f"Mounting {target_device[0]} at {volume} ...")
+        con.run(f"sudo mount {target_device[0]} {volume}")
     # Give the file system correct permissions
     con.run(f"sudo chmod -R 777 {volume}")
     # Terminate SSH connection
