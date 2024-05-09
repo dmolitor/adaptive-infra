@@ -19,6 +19,7 @@ base_dir = Path(__file__).resolve().parent.parent
 # For interactive use run the line below
 # base_dir = Path().resolve()
 
+
 def check_http_status(response: dict) -> None:
     """Simple checker of HTTP status"""
     code = response.get("ResponseMetadata")["HTTPStatusCode"]
@@ -26,10 +27,12 @@ def check_http_status(response: dict) -> None:
         raise ConnectionError(f"Returned HTTP status code {code}")
     return None
 
+
 def local_key(name: str):
     """Is a key stored locally"""
     local_key_path = os.path.expanduser("~/.aws") + f"/{name}.pem"
     return os.path.isfile(local_key_path)
+
 
 def existing_keys(client) -> dict:
     """Return a dictionary of all existing keys that are stored locally"""
@@ -45,9 +48,9 @@ def existing_keys(client) -> dict:
             local_keys[k] = v
     return local_keys
 
+
 def create_key(
-    client,
-    name="AdaptiveKey" + str(random.sample(range(int(1e4)), 1)[0])
+    client, name="AdaptiveKey" + str(random.sample(range(int(1e4)), 1)[0])
 ) -> str:
     """Create a public/private key pair"""
     response = client.create_key_pair(KeyName=name)
@@ -59,6 +62,7 @@ def create_key(
     os.chmod(pem_path, 0o400)
     return name
 
+
 def get_key(client) -> str:
     """Get a private key pair for launching an instance"""
     local_keys = existing_keys(client)
@@ -68,44 +72,31 @@ def get_key(client) -> str:
         key_name = list(local_keys.keys())[0]
     return key_name
 
+
 def get_ami_id(name: str, client) -> str:
     """Retrieve the ID of an AMI from its name"""
-    response = client.describe_images(
-        Filters=[
-            {"Name": "name", "Values": [name]}
-        ]
-    )
+    response = client.describe_images(Filters=[{"Name": "name", "Values": [name]}])
     check_http_status(response)
     image = response.get("Images")
     if len(image) > 1:
         raise ValueError(f"Only 1 image expected; {len(image)} found")
     return image[0]["ImageId"]
 
+
 def get_volume_id(name: str, client) -> str:
     """Retrieve the ID of a volume"""
-    response = client.describe_volumes(
-        Filters=[
-            {
-                "Name": "tag:Name",
-                "Values": [name]
-            }
-        ]
-    )
+    response = client.describe_volumes(Filters=[{"Name": "tag:Name", "Values": [name]}])
     check_http_status(response)
     volumes = response.get("Volumes")
     if len(volumes) != 1:
         raise ValueError(f"Exactly 1 volume expected; {len(volumes)} found")
     return volumes[0]["VolumeId"]
 
+
 def get_group_id(name: str, client) -> str:
     """Retrieve the ID of a security group"""
     response = client.describe_security_groups(
-        Filters=[
-            {
-                "Name": "group-name",
-                "Values": [name]
-            }
-        ]
+        Filters=[{"Name": "group-name", "Values": [name]}]
     )
     check_http_status(response)
     groups = response.get("SecurityGroups")
@@ -113,20 +104,17 @@ def get_group_id(name: str, client) -> str:
         raise ValueError(f"Exactly 1 group expected; {len(groups)} found")
     return groups[0]["GroupId"]
 
+
 def get_instance_public_ip(instance_id: str, client) -> str:
     response = client.describe_instances(InstanceIds=[instance_id])
     check_http_status(response)
     instance = response.get("Reservations")[0].get("Instances")
     return instance[0]["PublicIpAddress"]
 
+
 def server_exists(client, name: str = "AdaptiveServer") -> bool:
     response = client.describe_instances(
-        Filters=[
-            {
-                "Name": "tag:Name",
-                "Values": [name]
-            }
-        ]
+        Filters=[{"Name": "tag:Name", "Values": [name]}]
     )
     check_http_status(response)
     reservations = response.get("Reservations")
@@ -138,6 +126,7 @@ def server_exists(client, name: str = "AdaptiveServer") -> bool:
         return True
     else:
         return False
+
 
 def launch_image(client, verbose: bool = True) -> bool:
     # Prepping configuration
@@ -166,7 +155,7 @@ def launch_image(client, verbose: bool = True) -> bool:
                     },
                 ],
             },
-        ]
+        ],
     }
     # Launching instance
     if verbose:
@@ -178,14 +167,11 @@ def launch_image(client, verbose: bool = True) -> bool:
     print("Waiting for instance to be healthy ...")
     waiter = client.get_waiter("instance_status_ok")
     waiter.wait(
-        InstanceIds=[instance_id],
-        WaiterConfig={"Delay": 10, "MaxAttempts": 48}
+        InstanceIds=[instance_id], WaiterConfig={"Delay": 10, "MaxAttempts": 48}
     )
     # Mount volume
     mount_response = client.attach_volume(
-        Device="/dev/sdd",
-        InstanceId=instance_id,
-        VolumeId=adaptive_volume
+        Device="/dev/sdd", InstanceId=instance_id, VolumeId=adaptive_volume
     )
     check_http_status(mount_response)
     # Wait for volume to be in use
@@ -193,9 +179,10 @@ def launch_image(client, verbose: bool = True) -> bool:
     waiter = client.get_waiter("volume_in_use")
     waiter.wait(
         VolumeIds=[adaptive_volume],
-        WaiterConfig={"Delay": 10, "MaxAttempts": 12}
+        WaiterConfig={"Delay": 10, "MaxAttempts": 12},
     )
     return instance_id
+
 
 def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     public_ip = get_instance_public_ip(instance_id, client)
@@ -205,7 +192,7 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
         user="ubuntu",
         connect_kwargs={
             "key_filename": f"{os.path.expanduser('~/.aws')}/{get_key(ec2)}.pem"
-        }
+        },
     )
     con.open()
     if not con.is_connected:
@@ -215,10 +202,10 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     target_device = []
     for device in devices:
         device_exists = (
-            con
-            .run(f"[ -b {device} ] && echo true || echo false", hide=True)
-            .stdout
-            .strip() == "true"
+            con.run(
+                f"[ -b {device} ] && echo true || echo false", hide=True
+            ).stdout.strip()
+            == "true"
         )
         if device_exists:
             target_device.append(device)
@@ -228,10 +215,8 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
         raise FileExistsError("Both devices (/dev/xvdd; /dev/nvme1n1) were found")
     # Check whether the drive has a file system yet
     filesys = (
-        con
-        .run(f"sudo file -s {target_device[0]}", hide=True)
-        .stdout
-        .strip()
+        con.run(f"sudo file -s {target_device[0]}", hide=True)
+        .stdout.strip()
         .removeprefix(f"{target_device[0]}: ")
     )
     if filesys == "data":
@@ -239,23 +224,19 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
         con.run(f"sudo mkfs -t xfs {target_device[0]}")
     # Make a directory where we will mount the drive
     data_dir_exists = (
-        con
-        .run("[ -d ./data ] && echo true || echo false", hide=True)
-        .stdout
-        .strip() == "true"
+        con.run("[ -d ./data ] && echo true || echo false", hide=True).stdout.strip()
+        == "true"
     )
     if not data_dir_exists:
         print(f"Creating mountpoint for device {target_device[0]} at {volume} ...")
         con.run(f"sudo mkdir {volume}")
     # Check if the volume is mounted yet
     volume_is_mtd = (
-        con
-        .run(
+        con.run(
             f"sudo lsblk -o MOUNTPOINT {target_device[0]} | grep -v MOUNTPOINT",
-            hide=True
-        )
-        .stdout
-        .strip() != ""
+            hide=True,
+        ).stdout.strip()
+        != ""
     )
     if not volume_is_mtd:
         print(f"Mounting {target_device[0]} at {volume} ...")
@@ -265,6 +246,7 @@ def mount_volume_to_drive(instance_id: str, volume: str, client) -> None:
     # Terminate SSH connection
     con.close()
 
+
 def launch_swarm(instance_id: str, client) -> None:
     public_ip = get_instance_public_ip(instance_id, client)
     # Initialize SSH connection
@@ -273,7 +255,7 @@ def launch_swarm(instance_id: str, client) -> None:
         user="ubuntu",
         connect_kwargs={
             "key_filename": f"{os.path.expanduser('~/.aws')}/{get_key(ec2)}.pem"
-        }
+        },
     )
     con.open()
     if not con.is_connected:
@@ -286,6 +268,7 @@ def launch_swarm(instance_id: str, client) -> None:
     con.run("sudo /bin/bash swarm-launch-aws.sh")
     # Scale up the swarm
     con.run(f"sudo docker service scale adaptive_stack_app={SWARM_N}")
+
 
 if __name__ == "__main__":
 
@@ -310,7 +293,5 @@ if __name__ == "__main__":
             launch_swarm(instance_id, ec2)
         except Exception:
             print(traceback.format_exc())
-            response = ec2.terminate_instances(
-                InstanceIds=[instance_id]
-            )
+            response = ec2.terminate_instances(InstanceIds=[instance_id])
             check_http_status(response)

@@ -13,9 +13,7 @@ no_consent_ui = ui.nav_panel(
         ui.column(
             6,
             ui.div(
-                {
-                    "style": "text-align: center;"
-                },
+                {"style": "text-align: center;"},
                 ui.br(),
                 ui.br(),
                 ui.br(),
@@ -26,7 +24,7 @@ no_consent_ui = ui.nav_panel(
                     + "also click the following link to return to Prolific: "
                     + f"[{prolific_redirect('noconsent')}]"
                     + f"({prolific_redirect('noconsent')}).*"
-                )
+                ),
             ),
         ),
         ui.column(3),

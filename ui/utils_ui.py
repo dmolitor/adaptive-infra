@@ -7,8 +7,10 @@ from utils_db import api_url
 This script defines utility functions for interacting with the user interface.
 """
 
+
 class ResponseForm:
     """A class to collect all user-submitted data"""
+
     def __init__(self) -> "ResponseForm":
         self.consent: bool = None
         self.arm_id: int = None
@@ -27,7 +29,7 @@ class ResponseForm:
         self.sex: str | None = None
         self.discriminated: bool | None = None
         self.garbage: bool = False
-    
+
     def generate_form(self) -> dict:
         """Generate a dictionary containing user responses"""
         out = {
@@ -38,7 +40,7 @@ class ResponseForm:
             "prolific_id": self.prolific_id,
             "in_usa": self.in_usa,
             "commitment": self.commitment,
-            "captcha":self.captcha,
+            "captcha": self.captcha,
             "option_preference": self.option_preference,
             "option_attention": self.option_attention,
             "option_attention_truth": self.option_attention_truth,
@@ -47,10 +49,10 @@ class ResponseForm:
             "race": self.race,
             "sex": self.sex,
             "discriminated": self.discriminated,
-            "garbage": self.garbage
+            "garbage": self.garbage,
         }
         return out
-    
+
     def validate_data(self) -> None:
         # Indicator if the response is garbage or not
         garbage = False
@@ -75,22 +77,20 @@ class ResponseForm:
             self.age = None
         self.garbage = garbage
 
+
 def error(
-        id: str,
-        selector: str,
-        message: str = "Please select exactly one option!",
-        where: str = "afterEnd"
-    ):
+    id: str,
+    selector: str,
+    message: str = "Please select exactly one option!",
+    where: str = "afterEnd",
+):
     """Inserts an error message after a user interface element"""
     ui.remove_ui(selector=f"#{id}")
     status = ui.help_text(
-        ui.span(
-            {"style": "color:red; text-align: center;"},
-            message
-        ),
-        id=id
+        ui.span({"style": "color:red; text-align: center;"}, message), id=id
     )
     ui.insert_ui(ui=status, selector=selector, where=where)
+
 
 def error_clear(id: str | list[str]):
     """Removes all error messages from a user interface element"""
@@ -99,11 +99,13 @@ def error_clear(id: str | list[str]):
     for i in id:
         ui.remove_ui(selector=f"#{i}")
 
+
 def empty_age(age: tuple[str]) -> bool:
     """Check if age is a non-empty result"""
     if age == ():
         return True
     return False
+
 
 def get_prolific_id(session: Session) -> str | None:
     """Retrieves the current user's Prolific ID from the URL"""
@@ -118,15 +120,13 @@ def get_prolific_id(session: Session) -> str | None:
     if query_dict == {}:
         return None
     # Get the Prolific ID
-    prolific_id = (
-        query_dict
-        .get("PROLIFIC_PID")
-    )
+    prolific_id = query_dict.get("PROLIFIC_PID")
     if isinstance(prolific_id, str):
         prolific_id = prolific_id.replace("{{", "").replace("}}", "")
     else:
         return None
     return prolific_id
+
 
 def validate_age(age: tuple[str]) -> bool:
     """Check if age is a non-empty result"""
@@ -136,6 +136,7 @@ def validate_age(age: tuple[str]) -> bool:
         return True
     except:
         return False
+
 
 def validate_race(race: tuple[str]) -> bool:
     """Check if race is a non-empty result"""
@@ -149,6 +150,7 @@ def validate_race(race: tuple[str]) -> bool:
             return False
     return True
 
+
 def which_is_older(context: dict) -> int:
     """Which of two candidates is older"""
     context = context["context"]
@@ -159,6 +161,7 @@ def which_is_older(context: dict) -> int:
     else:
         return 1
 
+
 def which_is_college_ed(context: dict) -> int:
     context = context["context"]
     candidate1 = context["first"]
@@ -167,6 +170,7 @@ def which_is_college_ed(context: dict) -> int:
         return 0
     else:
         return 1
+
 
 # Define small JS scripts to scroll to the top and bottom of a page and to
 # redirect to an external URL

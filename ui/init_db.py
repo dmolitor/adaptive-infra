@@ -16,36 +16,34 @@ meta_generator = {
     "prior_trips": [
         [
             "Has visited once for vacation",
-            "Two trips, both during the holidays"
+            "Two trips, both during the holidays",
         ],
         [
             "Has traveled to the U.S. every other summer since childhood",
-            "Has visited the U.S. many times as a tourist"
-        ]
+            "Has visited the U.S. many times as a tourist",
+        ],
     ],
     "education": [["College degree", "No formal education"]],
     "reason": [
         [
             "Escaping political/religious persecution",
-            "Escalating violence in home country"
+            "Escalating violence in home country",
         ],
         [
             "Seeking better employment opportunities",
-            "Greater access to high-paying jobs"
-        ]
+            "Greater access to high-paying jobs",
+        ],
     ],
     "origin": [["Poland", "Germany"], ["Sudan", "Somalia"]],
     "profession": [
         ["Waiter", "Janitor"],
-        ["Information Technology Specialist", "Construction Worker"]
-    ]
+        ["Information Technology Specialist", "Construction Worker"],
+    ],
 }
 
 # Create all possible metadata combinations
 meta_dicts = []
-combinations = itertools.product(
-    *(meta_generator[key] for key in meta_generator)
-)
+combinations = itertools.product(*(meta_generator[key] for key in meta_generator))
 for combination in combinations:
     temp_dict = dict(zip(meta_generator.keys(), combination))
     meta_dicts.append(temp_dict)
@@ -63,7 +61,7 @@ for k in bandit_metadata.keys():
 # Create the Pi values for each bandit arm
 bandit_pis = {}
 for i, k in enumerate(bandit_metadata.keys()):
-    bandit_pis[k] = (i+1)/len(bandit_metadata)
+    bandit_pis[k] = (i + 1) / len(bandit_metadata)
 
 # Initialize the bandit table
 bandit = {
@@ -71,6 +69,6 @@ bandit = {
     "params": bandit_params,
     "meta": bandit_metadata,
     "pi": {"arm1": 1},
-    "batch": {"remaining": BATCH_SIZE, "active": True}
+    "batch": {"remaining": BATCH_SIZE, "active": True},
 }
 initialize_bandit(bandit)

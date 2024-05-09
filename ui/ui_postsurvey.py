@@ -13,18 +13,15 @@ attention_ui = ui.nav_panel(
     None,
     ui.row(
         ui.column(3),
-        ui.column(6,
+        ui.column(
+            6,
             ui.input_radio_buttons(
                 id="attention",
                 label=ui.HTML("Which immigrant had a higher education level?"),
-                choices={
-                    0: "Immigrant 1",
-                    1: "Immigrant 2",
-                    2: "I don't know"
-                },
+                choices={0: "Immigrant 1", 1: "Immigrant 2", 2: "I don't know"},
                 selected="",
-                width="100%"
-            )
+                width="100%",
+            ),
         ),
         ui.column(3),
     ),
@@ -35,11 +32,8 @@ attention_ui = ui.nav_panel(
             6,
             ui.div(
                 {"style": "text-align: right;"},
-                ui.input_action_button(
-                    "next_page_outro",
-                    "Next page \u27A4"
-                ),
-            )
+                ui.input_action_button("next_page_outro", "Next page \u27a4"),
+            ),
         ),
         ui.column(3),
     ),

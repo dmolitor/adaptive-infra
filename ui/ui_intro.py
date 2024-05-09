@@ -32,18 +32,11 @@ intro_ui = ui.nav_panel(
                     + "researchers from Cornell University: Ian Lundberg, "
                     + "Jennah Gosciak, Elizabeth Moon, and "
                     + "Daniel Molitor.<br><br>"
-                    + "<h4>**What the study is about**</h4>This survey aims "
-                    + "to understand how individuals make decisions when "
-                    + "choosing political candidates.<br><br>"
-                    + "<h4>**What we will ask you to do**</h4>If you agree to "
-                    + "participate, you will be asked to provide your "
-                    + "preference for a candidate from two possible choices. "
-                    + "You will be expected to read the information provided "
-                    + "about each candidate, indicate your preference, answer "
-                    + "a single multiple choice question about the content "
-                    + "shown, and provide information on your age, race, "
-                    + "ethnicity, sex, and location.<br><br>"
-                    + "<h4>**Compensation**</h4>You will be compensated with "
+                    + "<h4>**What the study is about**</h4>"
+                    + "This survey aims to understand attitudes toward immigrants' admission to the United States."
+                    + "<br><br><h4>**What we will ask you to do**</h4>"
+                    + "If you agree to participate, you will be asked to provide your preference for an immigrant profile from two possible choices. You will be expected to read the information provided about each immigrant, indicate your preference, answer a single multiple choice question about the content shown, and provide information on your age, race, ethnicity, sex, and location."
+                    + "<br><br><h4>**Compensation**</h4>You will be compensated with "
                     + "a $0.50 monetary reward for participation "
                     + "in the survey.<br><br>"
                     + "<h4>**Risks**</h4>We anticipate that your "
@@ -92,14 +85,14 @@ intro_ui = ui.nav_panel(
                     + "complaint so that anonymity can be ensured.<br><br>"
                     + 'If you agree to these conditions, please click "I '
                     + 'consent to participate" below. If you do not agree, '
-                    + 'click the “I do not consent to participate” '
+                    + "click the “I do not consent to participate” "
                     + "option.<br><br>"
                     + "By agreeing to participate, you confirm that you are "
                     + "over 18 years of age."
-                )
-            )
+                ),
+            ),
         ),
-        ui.column(3)
+        ui.column(3),
     ),
     ui.row(
         ui.column(3),
@@ -114,8 +107,8 @@ intro_ui = ui.nav_panel(
                 },
                 selected="",
                 width="100%",
-            )
-        )
+            ),
+        ),
     ),
     ui.row(
         ui.column(3),
@@ -123,10 +116,12 @@ intro_ui = ui.nav_panel(
             6,
             ui.div(
                 {"style": "text-align: right;"},
-                ui.input_action_button("next_page_prolific_screening", "Next page \u27A4"),
-            )
+                ui.input_action_button(
+                    "next_page_prolific_screening", "Next page \u27a4"
+                ),
+            ),
         ),
-        ui.column(3)
+        ui.column(3),
     ),
-    ui.br()
+    ui.br(),
 )

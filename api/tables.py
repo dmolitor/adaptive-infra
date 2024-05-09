@@ -5,6 +5,7 @@ from sqlmodel import Field, Relationship, SQLModel
 This script creates data models for each table in the database.
 """
 
+
 class Bandit(SQLModel, table=True):
     """
     A class for creating and working with the `bandit` table in Postgres.
@@ -13,6 +14,7 @@ class Bandit(SQLModel, table=True):
     label: The label of the bandit arm (same as `ResponseJSON.choice`)
     parameters: A list of the arm's Bernoulli (p) param's Beta params over time
     """
+
     id: int | None = Field(default=None, primary_key=True)
     label: str
     parameters: List["Parameters"] = Relationship(back_populates="arm")
@@ -20,10 +22,12 @@ class Bandit(SQLModel, table=True):
     pi: List["Pi"] = Relationship(back_populates="arm")
     responses: List["Response"] = Relationship(back_populates="arm")
 
+
 class Batch(SQLModel, table=True):
     """
     A database table for recording the batch sizes and responses.
     """
+
     id: int | None = Field(default=None, primary_key=True)
     remaining: int | None
     active: bool
@@ -32,11 +36,13 @@ class Batch(SQLModel, table=True):
     responses: List["Response"] = Relationship(back_populates="batch")
     noconsent: List["NoConsent"] = Relationship(back_populates="batch")
 
+
 class Metadata(SQLModel, table=True):
     """
     A class for representing all the metadata that goes along with
     each Bandit arm (aka context).
     """
+
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
     prior_trips: str
@@ -46,6 +52,7 @@ class Metadata(SQLModel, table=True):
     profession: str
     arm: Bandit = Relationship(back_populates="meta")
 
+
 class NoConsent(SQLModel, table=True):
     """
     A class for creating and working with the `noconsent` table in Postgres.
@@ -54,10 +61,12 @@ class NoConsent(SQLModel, table=True):
     consent: Does the user consent to the study
     batch_id: Which batch does this user belong to
     """
+
     id: int | None = Field(default=None, primary_key=True)
     batch_id: int = Field(foreign_key="batch.id")
     consent: bool
     batch: Batch = Relationship(back_populates="noconsent")
+
 
 class Parameters(SQLModel, table=True):
     """
@@ -72,6 +81,7 @@ class Parameters(SQLModel, table=True):
     alpha: The corresponding arm's alpha parameter value
     beta: The corresponding arm's beta parameter value
     """
+
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
     batch_id: int = Field(foreign_key="batch.id")
@@ -80,17 +90,20 @@ class Parameters(SQLModel, table=True):
     arm: Bandit = Relationship(back_populates="parameters")
     batch: Batch = Relationship(back_populates="parameters")
 
+
 class Pi(SQLModel, table=True):
     """
     A class for recording the percentage of 1000 realizations in which
     each arm is the most (or least) discriminatory arm.
     """
+
     id: int | None = Field(default=None, primary_key=True)
     batch_id: int = Field(foreign_key="batch.id")
     arm_id: int = Field(foreign_key="bandit.id")
     pi: float
     arm: Bandit = Relationship(back_populates="pi")
     batch: "Batch" = Relationship(back_populates="pi")
+
 
 class Response(SQLModel, table=True):
     """
@@ -109,6 +122,7 @@ class Response(SQLModel, table=True):
     ethnicity: Demographics
     sex: Demographics
     """
+
     id: int | None = Field(default=None, primary_key=True)
     arm_id: int = Field(foreign_key="bandit.id")
     batch_id: int = Field(foreign_key="batch.id")

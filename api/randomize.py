@@ -16,8 +16,9 @@ These steps include:
 ## TODO: Discuss, does setting the seed here actually matter/help/harm?
 # Set seed (currently using the random module as well as numpy because
 # numpy introduces type issues when interacting with the database).
-#random.seed(123)
+# random.seed(123)
 rng = np.random.default_rng(seed=None)
+
 
 def draw_arms(params: dict, n_sim: int = int(1e6), max: bool = True) -> dict:
     """
@@ -41,9 +42,7 @@ def draw_arms(params: dict, n_sim: int = int(1e6), max: bool = True) -> dict:
     ## TODO: same complaint. Want to make this distribution agnostic.
     for value in params.values():
         # For each arm generate `n_sim` draws from the posterior beta dist.
-        array_list.append(
-            rng.beta(a=value["alpha"], b=value["beta"], size=n_sim)
-        )
+        array_list.append(rng.beta(a=value["alpha"], b=value["beta"], size=n_sim))
     # Combine these into a 2-d numpy array
     matrix = np.vstack(array_list)
     # Which arm generates the max/min value for each row
@@ -61,6 +60,7 @@ def draw_arms(params: dict, n_sim: int = int(1e6), max: bool = True) -> dict:
     for key, value in zip(params.keys(), arm_means):
         arm_means_dict[key] = value
     return arm_means_dict
+
 
 def html_format(input: dict) -> str:
     """Format the candidates as an HTML table for the UI"""
@@ -103,20 +103,17 @@ def html_format(input: dict) -> str:
     context = {
         "arm_id": first["arm_id"],
         "context": input,
-        "html_content": html_content
+        "html_content": html_content,
     }
     return context
+
 
 def randomize(batch_id: int, engine: Engine) -> dict:
     """Randomize choice order and bandit arm. Return candidates as a dict"""
     target_arm = randomize_context(batch_id, engine)
     with Session(engine) as session:
         # Retrieve the context profiles
-        bandit = (
-            session
-            .exec(select(Bandit).where(Bandit.id == target_arm))
-            .one()
-        )
+        bandit = session.exec(select(Bandit).where(Bandit.id == target_arm)).one()
         profile_meta = [profile.model_dump() for profile in bandit.meta]
         # 'Horizontally' randomize each candidate characteristic
         # Then separate the randomized characteristics into separate profiles
@@ -130,9 +127,10 @@ def randomize(batch_id: int, engine: Engine) -> dict:
         out = {"first": first, "second": second}
         return out
 
+
 def randomize_context(batch_id: int, engine: Engine) -> int:
     """Randomize which bandit arm is shown to the user"""
-    runif = float(rng.uniform(low = 0.0, high = 1.0, size = 1)[0])
+    runif = float(rng.uniform(low=0.0, high=1.0, size=1)[0])
     print(f"runif: {runif}")
     with Session(engine) as session:
         batch = session.exec(select(Batch).where(Batch.id == batch_id)).one()
@@ -142,6 +140,7 @@ def randomize_context(batch_id: int, engine: Engine) -> int:
             if runif <= pi["pi"]:
                 return pi["arm_id"]
     raise Exception("Failed to find a suitable `pi` value")
+
 
 def randomize_context_items(input: List[str | int]) -> List[str | int]:
     """Randomize which order context characteristics are shown"""

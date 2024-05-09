@@ -24,8 +24,10 @@ else:
 # Construct the url for querying the API
 api_url = f"http://{network}:{API_HOST_PORT}"
 
+
 def with_retry(f):
     """A decorator to retry API queries if they fail"""
+
     def wrapper(*args, **kwargs):
         iter = 0
         while iter < 5:
@@ -37,7 +39,9 @@ def with_retry(f):
                 iter += 1
                 exception_message = traceback.format_exc()
         raise ConnectionError(exception_message)
+
     return wrapper
+
 
 @with_retry
 def current_batch():
@@ -47,6 +51,7 @@ def current_batch():
     current_batch = current_batch_request.json()
     return current_batch
 
+
 @with_retry
 def current_context(batch_id: int):
     """Retrieves (randomly) the context for the current user session"""
@@ -54,8 +59,9 @@ def current_context(batch_id: int):
     context_request.raise_for_status()
     context = context_request.json()
     ## TODO: Remove this at some point (currently helpful for interactive use)
-    print(f'context:\n{context}')
+    print(f"context:\n{context}")
     return context
+
 
 @with_retry
 def current_pi():
@@ -63,53 +69,48 @@ def current_pi():
     cur_batch = current_batch()
     resp = req.get(api_url + "/bandit/batch")
     resp.raise_for_status()
-    [cur_params] = [
-        x for x in resp.json() 
-        if x["batch"]["id"] == cur_batch["id"]
-    ]
+    [cur_params] = [x for x in resp.json() if x["batch"]["id"] == cur_batch["id"]]
     pi_vals = [x["pi"] for x in cur_params["pi"]]
     for i in range(len(pi_vals) - 1, 0, -1):
         pi_vals[i] = pi_vals[i] - pi_vals[(i - 1)]
     return pi_vals
 
+
 @with_retry
 def decrement_batch_remaining(batch_id: int, active: bool = True):
     """Decrement the batch `remaining` parameter. Can also deactivate batch"""
     (
-        req
-        .post(
-            api_url 
+        req.post(
+            api_url
             + f"/bandit/batch/decrement?batch_id={str(batch_id)}"
             + f"&active={active}"
-        )
-        .raise_for_status()
+        ).raise_for_status()
     )
+
 
 @with_retry
 def get_batch_id(batch_id: int):
     """Get specific batch"""
-    batch_request = req.get(
-        api_url + f"/bandit/batch?batch_id={str(batch_id)}"
-    )
+    batch_request = req.get(api_url + f"/bandit/batch?batch_id={str(batch_id)}")
     batch_request.raise_for_status()
     batch = batch_request.json()
     return batch
+
 
 @with_retry
 def increment_batch(batch_id: int, remaining: int, active: bool = True):
     """Ping the api to create a new batch in the Batch database table"""
     (
-        req
-        .post(
+        req.post(
             api_url + "/bandit/batch",
             json={
                 "batch_id": batch_id,
                 "remaining": remaining,
-                "active": active
-            }
-        )
-        .raise_for_status()
+                "active": active,
+            },
+        ).raise_for_status()
     )
+
 
 @with_retry
 def initialize_bandit(bandit: dict) -> None:
@@ -119,12 +120,13 @@ def initialize_bandit(bandit: dict) -> None:
     if not bandit_req.json():
         req.post(api_url + "/bandit", json=bandit).raise_for_status()
 
+
 @with_retry
 def submit(
     response_form,
     batch_id: int | None,
     batch_size: int | None,
-    noconsent: bool = False
+    noconsent: bool = False,
 ) -> None:
     """
     Handles the logistics of submitting the response form. If the form is
@@ -141,11 +143,13 @@ def submit(
     if not response_form.garbage:
         update_batch(batch_id, batch_size)
 
+
 @with_retry
 def submit_response(form: dict) -> None:
     """Submit a filled-out survey form via the API"""
     url = api_url + "/responses"
     req.post(url, json=form).raise_for_status()
+
 
 @with_retry
 def submit_response_noconsent(form: dict) -> None:
@@ -155,6 +159,7 @@ def submit_response_noconsent(form: dict) -> None:
     for key in ["batch_id", "consent"]:
         resp_form[key] = form[key]
     req.post(url, json=resp_form).raise_for_status()
+
 
 @with_retry
 def update_batch(batch_id: int, remaining: int):
