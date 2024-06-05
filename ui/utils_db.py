@@ -14,7 +14,8 @@ env_vars = os.environ
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
 API_HOST_PORT = env_vars["API_HOST_PORT"]
 STOPPAGE_THRESHOLD = float(env_vars["STOPPAGE_THRESHOLD"])
-
+STUDY_MAX_N = float(env_vars["STUDY_MAX_N"])
+WARMUP_N = float(env_vars["WARMUP_N"])
 
 if ADAPTIVE_TESTING is not None and ADAPTIVE_TESTING:
     network = "localhost"
@@ -88,6 +89,12 @@ def decrement_batch_remaining(batch_id: int, active: bool = True):
     )
 
 
+def finished_warmup() -> True:
+    if num_responses() > WARMUP_N:
+        return True
+    return False
+
+
 @with_retry
 def get_batch_id(batch_id: int):
     """Get specific batch"""
@@ -122,6 +129,12 @@ def initialize_bandit(bandit: dict) -> None:
 
 
 @with_retry
+def num_responses() -> int:
+    resp_request = req.get(api_url + "/responses")
+    resp_request.raise_for_status()
+    return len(resp_request.json())
+
+
 def submit(
     response_form,
     batch_id: int | None,
@@ -139,9 +152,15 @@ def submit(
         submit_response_noconsent(response_form_data)
     else:
         submit_response(response_form_data)
-    # Update batches and corresponding parameters if appropriate
-    if not response_form.garbage:
+    # Update batches and corresponding parameters if the form is valid
+    # and if we have ended the warm-up phase of receiving responses
+    if not response_form.garbage and finished_warmup():
         update_batch(batch_id, batch_size)
+    # If we have exceeded the max number of survey responses, pause the
+    # Prolific study
+    if num_responses() >= STUDY_MAX_N:
+        print("Max number of respondents required; stopping Prolific study")
+        pause_prolific_study()
 
 
 @with_retry
@@ -177,6 +196,7 @@ def update_batch(batch_id: int, remaining: int):
         # Check if any of the new arm pi values exceed stoppage threshold
         pi_vals = current_pi()
         print(f"Current pi vals: {pi_vals}")
+        # If any pi values exceed stoppage threshold
         if any([x >= STOPPAGE_THRESHOLD for x in pi_vals]):
             pause_prolific_study()
     elif ready_to_update and not batch_is_active:

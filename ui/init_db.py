@@ -68,7 +68,7 @@ bandit = {
     "labels": list(bandit_metadata.keys()),
     "params": bandit_params,
     "meta": bandit_metadata,
-    "pi": {"arm1": 1},
+    "pi": bandit_pis,
     "batch": {"remaining": BATCH_SIZE, "active": True},
 }
 initialize_bandit(bandit)
