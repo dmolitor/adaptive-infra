@@ -5,21 +5,27 @@ from typing import List
 This script creates response models for validating data submitted with FastAPI.
 """
 
+
 class BatchJSON(BaseModel):
     """Validate Batch increments updated via the api"""
+
     batch_id: int
     remaining: int
     active: bool
 
+
 class NoConsentJSON(BaseModel):
     """Validate responses with no consent"""
+
     batch_id: int
     consent: bool
+
 
 class ResponseJSON(BaseModel):
     """
     A class for validating response data submitted via the API
     """
+
     consent: bool
     arm_id: int
     batch_id: int
@@ -28,9 +34,9 @@ class ResponseJSON(BaseModel):
     in_usa: bool | None
     commitment: str | None
     captcha: str | None
-    candidate_preference: int | None
-    candidate_older: int | None
-    candidate_older_truth: int | None
+    option_preference: int | None
+    option_attention: int | None
+    option_attention_truth: int | None
     age: int | None
     race: str | None
     ethnicity: str | None
@@ -38,9 +44,12 @@ class ResponseJSON(BaseModel):
     discriminated: bool | None
     garbage: bool
 
+
 class ParametersJSON(BaseModel):
     """Validate Parameters data"""
+
     params: dict
+
 
 class BanditJSON(ParametersJSON):
     """
@@ -98,6 +107,7 @@ class BanditJSON(ParametersJSON):
         "batch": {"remaining": 1}
         ```
     """
+
     labels: List[str] | None
     meta: dict
     pi: dict

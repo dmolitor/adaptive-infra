@@ -1,5 +1,6 @@
 import boto3
 
+
 def check_http_status(response: dict) -> None:
     """Simple checker of HTTP status"""
     code = response.get("ResponseMetadata")["HTTPStatusCode"]
@@ -7,14 +8,10 @@ def check_http_status(response: dict) -> None:
         raise ConnectionError(f"Returned HTTP status code {code}")
     return None
 
+
 def running_image_ids(client, name: str = "AdaptiveServer") -> list[str]:
     response = client.describe_instances(
-        Filters=[
-            {
-                "Name": "tag:Name",
-                "Values": [name]
-            }
-        ]
+        Filters=[{"Name": "tag:Name", "Values": [name]}]
     )
     check_http_status(response)
     reservations = response.get("Reservations")
@@ -25,10 +22,12 @@ def running_image_ids(client, name: str = "AdaptiveServer") -> list[str]:
             statuses.append(instance["State"]["Name"])
             instance_ids.append(instance["InstanceId"])
     running_ids = [
-        id for status, id in zip(statuses, instance_ids) 
+        id
+        for status, id in zip(statuses, instance_ids)
         if status == "pending" or status == "running"
     ]
     return running_ids
+
 
 if __name__ == "__main__":
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Clone the adaptive-infra repo
-sudo git clone https://github.com/dmolitor/adaptive-infra
+sudo git clone -b survey-update https://github.com/dmolitor/adaptive-infra
 cd adaptive-infra
 
 # Copy the correct .env file into the repo

@@ -41,6 +41,12 @@ aws-sso-login profile="default":
 aws-volume: aws-sso-login
   {{python}} {{justfile_directory()}}/scripts/create-volume.py
 
+# Format with Black
+black: venv
+  {{python}} -m black {{justfile_directory()}}/ui
+  {{python}} -m black {{justfile_directory()}}/api
+  {{python}} -m black {{justfile_directory()}}/scripts
+
 # Check if AWS CLI is installed
 check-aws:
   @aws --version

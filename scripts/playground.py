@@ -9,8 +9,10 @@ base_url = "http://localhost:80"
 # server_ip = "12.345.678.910"
 # base_url = f"http://{server_ip}:80"
 
+
 def json_pprint(x):
     print(json.dumps(x, indent=4))
+
 
 # Make sure it's alive
 print(req.get(base_url).text)

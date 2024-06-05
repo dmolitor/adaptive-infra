@@ -1,5 +1,3 @@
-#from asyncio import sleep
-from time import sleep
 from init_db import BATCH_SIZE
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
@@ -23,8 +21,8 @@ from utils_ui import (
     scroll_top,
     validate_age,
     validate_race,
-    which_is_older,
-    ResponseForm
+    which_is_college_ed,
+    ResponseForm,
 )
 
 """
@@ -60,22 +58,22 @@ app_ui = ui.page_fluid(
         screening_questions,
         outro_ui,
         no_consent_ui,
-        attention_ui,
         demographics_ui,
-        id="hidden_tabs"
-    )
+        attention_ui,
+        id="hidden_tabs",
+    ),
 )
 
-def server(input: Inputs, output: Outputs, session: Session):
 
+def server(input: Inputs, output: Outputs, session: Session):
     """This function handles all the logic for the app"""
-    
+
     # Initialize the response form
     response_form = ResponseForm()
 
     # Logic for 'Next Page' button on landing page.
-    # 
-    # This function uses the async keyword because we want to call the 
+    #
+    # This function uses the async keyword because we want to call the
     # Javascript 'scroll' script (defined above), that will scroll
     # to the top of the page. This requires us to 'await' the result, and
     # await can only be called in an async cur_context.
@@ -92,7 +90,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="consent_status",
                 selector="#consent",
                 message="This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             await session.send_custom_message("scroll_bottom", "")
         # If they consent, proceed
@@ -104,7 +102,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                     "What is your Prolific ID? Please note that this response "
                     + "should auto-fill with the correct ID."
                 ),
-                value=get_prolific_id(session)
+                value=get_prolific_id(session),
             )
             await session.send_custom_message("scroll_top", "")
             # Switch tabs to the Prolific questions tab
@@ -124,10 +122,9 @@ def server(input: Inputs, output: Outputs, session: Session):
             submit(response_form, None, None, noconsent=True)
             # Redirect to the Prolific No-Consent page
             await session.send_custom_message(
-                "redirect_url",
-                prolific_redirect("noconsent")
+                "redirect_url", prolific_redirect("noconsent")
             )
-    
+
     # Logic for 'Next Page' on the consent page
     @reactive.Effect
     @reactive.event(input.next_page_dem)
@@ -141,17 +138,19 @@ def server(input: Inputs, output: Outputs, session: Session):
         proceed = True
         # Clear all errors (there may be none; that's fine)
         error_clear(
-            id=["captcha_status",
+            id=[
+                "captcha_status",
                 "prolific_id_status",
                 "location_status",
-                "commitment_status"]
+                "commitment_status",
+            ]
         )
         # Ensure prolific ID has been entered
         if prolific_id == "" or prolific_id is None:
             error(
                 id="prolific_id_status",
                 selector="#prolific_id",
-                message="* This field is required"
+                message="* This field is required",
             )
             proceed = False
         # Ensure location has been entered
@@ -160,7 +159,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="location_status",
                 selector="#location",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         # Ensure commitment has been entered
@@ -169,7 +168,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="commitment_status",
                 selector="#commitment",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         # Ensure captcha value is entered
@@ -177,7 +176,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             error(
                 id="captcha_status",
                 selector="#captcha",
-                message="* This field is required"
+                message="* This field is required",
             )
             proceed = False
         if proceed:
@@ -189,8 +188,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 response_form.in_usa = False
                 ## TODO: make an "Invalid" landing page
                 await session.send_custom_message(
-                    "redirect_url",
-                    prolific_redirect("invalid")
+                    "redirect_url", prolific_redirect("invalid")
                 )
             if commitment == "1":
                 response_form.commitment = "yes"
@@ -204,7 +202,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_demographics")
         else:
             await session.send_custom_message("scroll_bottom", "")
-    
+
     @reactive.Effect
     @reactive.event(input.next_page_survey)
     async def _():
@@ -216,10 +214,12 @@ def server(input: Inputs, output: Outputs, session: Session):
         resp_sex = input.resp_sex()
         # Clear all errors (there may be none; that's fine)
         error_clear(
-            id=["resp_age_status",
+            id=[
+                "resp_age_status",
                 "resp_race_status",
                 "resp_ethnicity_status",
-                "resp_sex_status"]
+                "resp_sex_status",
+            ]
         )
         # Are we ready to proceed?
         proceed = True
@@ -229,7 +229,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_age_status",
                 selector="#resp_age_check",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         elif resp_age_text != "" and not empty_age(resp_age_check):
@@ -237,7 +237,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_age_status",
                 selector="#resp_age_check",
                 message="* Invalid entry",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         elif not validate_age(resp_age_text):
@@ -245,7 +245,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_age_status",
                 selector="#resp_age_check",
                 message="* Please enter a valid age",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         # Ensure valid race value(s) are selected
@@ -254,7 +254,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_race_status",
                 selector="#resp_race",
                 message="* Invalid entry",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         elif not validate_race(resp_race):
@@ -262,7 +262,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_race_status",
                 selector="#resp_race",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         # Validate ethnicity entry
@@ -271,7 +271,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_ethnicity_status",
                 selector="#resp_ethnicity",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         # Validate sex entry
@@ -280,7 +280,7 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="resp_sex_status",
                 selector="#resp_sex",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             proceed = False
         if proceed:
@@ -292,15 +292,14 @@ def server(input: Inputs, output: Outputs, session: Session):
 
             ui.insert_ui(
                 ui.HTML(cur_context["html_content"]),
-                selector="#candidates",
-                where="afterBegin"
+                selector="#options",
+                where="afterBegin",
             )
             ui.update_navs("hidden_tabs", selected="panel_survey")
             # Update the response form
             response_form.arm_id = cur_context["arm_id"]
             response_form.context_batch_id = cur_batch["id"]
-            older_candidate = which_is_older(cur_context)
-            response_form.candidate_older_truth = older_candidate
+            response_form.option_attention_truth = which_is_college_ed(cur_context)
             if resp_age_text != "":
                 response_form.age = int(resp_age_text)
             if "race_skip" not in resp_race:
@@ -318,34 +317,32 @@ def server(input: Inputs, output: Outputs, session: Session):
                 response_form.sex = "male"
         else:
             await session.send_custom_message("scroll_bottom", "")
-    
+
     # Logic for 'Next Page' on the primary survey page
     @reactive.Effect
     @reactive.event(input.next_page_attention)
     async def _():
-        # Grab the following values: candidate
-        candidate = input.candidate()
+        # Grab the following values: option
+        option = input.option()
         # Clear all errors (there may be none; that's fine)
-        error_clear(id="candidate_status")
+        error_clear(id="option_status")
         # Ensure candidate choice has been selected
-        if candidate not in ["0", "1"]:
+        if option not in ["0", "1"]:
             error(
-                id="candidate_status",
-                selector="#candidate",
+                id="option_status",
+                selector="#option",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             await session.send_custom_message("scroll_bottom", "")
         else:
-            await session.send_custom_message("scroll_top", "")
             ui.update_navs("hidden_tabs", selected="panel_attention")
             # Update the response form
-            response_form.candidate_preference = int(candidate)
-            older_candidate = response_form.candidate_older_truth
-            if response_form.candidate_preference == older_candidate:
-                response_form.discriminated = False
-            else:
+            response_form.option_preference = int(option)
+            if response_form.option_attention_truth == int(option):
                 response_form.discriminated = True
+            else:
+                response_form.discriminated = False
 
     @reactive.Effect
     @reactive.event(input.next_page_outro)
@@ -360,13 +357,13 @@ def server(input: Inputs, output: Outputs, session: Session):
                 id="attention_status",
                 selector="#attention",
                 message="* This field is required",
-                where="beforeEnd"
+                where="beforeEnd",
             )
             await session.send_custom_message("scroll_bottom", "")
         else:
             ui.update_navs("hidden_tabs", selected="panel_outro")
             # Update the response form
-            response_form.candidate_older = int(attention)
+            response_form.option_attention = int(attention)
             # Ensure user is rolled into the current active batch
             cur_batch = current_batch()
             response_form.batch_id = cur_batch["id"]
@@ -374,9 +371,9 @@ def server(input: Inputs, output: Outputs, session: Session):
             submit(response_form, response_form.batch_id, BATCH_SIZE)
             # Now redirect to Prolific
             await session.send_custom_message(
-                "redirect_url",
-                prolific_redirect("valid")
+                "redirect_url", prolific_redirect("valid")
             )
+
 
 # Runs the app. Intakes the UI and the server logic from above.
 # `static_assets` ensures that all `ui.img` calls can reference image

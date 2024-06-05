@@ -26,7 +26,7 @@ outro_ui = ui.nav_panel(
                     + "If you are not redirected automatically, you may "
                     + "also click the following link to return to Prolific: "
                     + f"{prolific_redirect('valid')}."
-                )
+                ),
             ),
         ),
         ui.column(3),
