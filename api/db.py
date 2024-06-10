@@ -306,7 +306,9 @@ def get_responses(engine: None | Engine):
     return responses
 
 
-def increment_batch(batch_id: int, remaining: int, active: bool, engine: None | Engine):
+def increment_batch(
+    batch_id: int, remaining: int, active: bool, maximum: bool, engine: None | Engine
+):
     bandit = get_bandit(engine=engine)
     # For each arm, collect successes and failures
     labels = []
@@ -343,7 +345,8 @@ def increment_batch(batch_id: int, remaining: int, active: bool, engine: None | 
                 "beta": arm_params.beta + failures,
             }
     # Construct updated Pi value for each arm
-    pi = draw_arms(params)
+    pi = draw_arms(params, max=maximum)
+    print(f"{pi}")
     # Now update the `Batch`, `Parameters` and `Pi` tables
     generate_batch(
         labels=labels,

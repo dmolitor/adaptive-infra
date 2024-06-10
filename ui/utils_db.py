@@ -105,7 +105,9 @@ def get_batch_id(batch_id: int):
 
 
 @with_retry
-def increment_batch(batch_id: int, remaining: int, active: bool = True):
+def increment_batch(
+    batch_id: int, remaining: int, active: bool = True, maximum: bool = True
+):
     """Ping the api to create a new batch in the Batch database table"""
     (
         req.post(
@@ -114,6 +116,7 @@ def increment_batch(batch_id: int, remaining: int, active: bool = True):
                 "batch_id": batch_id,
                 "remaining": remaining,
                 "active": active,
+                "maximum": maximum,
             },
         ).raise_for_status()
     )
@@ -139,6 +142,7 @@ def submit(
     response_form,
     batch_id: int | None,
     batch_size: int | None,
+    maximum: bool | None,
     noconsent: bool = False,
 ) -> None:
     """
@@ -155,7 +159,7 @@ def submit(
     # Update batches and corresponding parameters if the form is valid
     # and if we have ended the warm-up phase of receiving responses
     if not response_form.garbage and finished_warmup():
-        update_batch(batch_id, batch_size)
+        update_batch(batch_id, batch_size, maximum=maximum)
     # If we have exceeded the max number of survey responses, pause the
     # Prolific study
     if num_responses() >= STUDY_MAX_N:
@@ -181,7 +185,7 @@ def submit_response_noconsent(form: dict) -> None:
 
 
 @with_retry
-def update_batch(batch_id: int, remaining: int):
+def update_batch(batch_id: int, remaining: int, maximum: bool):
     """
     Decrement batch counter, and create new batch/pi/parameters as necessary.
     Also check if any arm exceeds the stoppage threshold. If so, pause the
@@ -192,7 +196,7 @@ def update_batch(batch_id: int, remaining: int):
     batch_is_active = batch["active"]
     if ready_to_update and batch_is_active:
         decrement_batch_remaining(batch["id"], active=False)
-        increment_batch(batch["id"], remaining=remaining)
+        increment_batch(batch["id"], remaining=remaining, maximum=maximum)
         # Check if any of the new arm pi values exceed stoppage threshold
         pi_vals = current_pi()
         print(f"Current pi vals: {pi_vals}")

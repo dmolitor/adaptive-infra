@@ -12,6 +12,7 @@ class BatchJSON(BaseModel):
     batch_id: int
     remaining: int
     active: bool
+    maximum: bool
 
 
 class NoConsentJSON(BaseModel):

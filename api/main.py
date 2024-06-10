@@ -188,7 +188,10 @@ def increment_bandit_batch(batch: BatchJSON):
     batch_id = batch.batch_id
     batch_remaining = batch.remaining
     batch_active = batch.active
-    increment_batch(batch_id, batch_remaining, batch_active, engine)
+    batch_max = batch.maximum
+    increment_batch(
+        batch_id, batch_remaining, batch_active, maximum=batch_max, engine=engine
+    )
     return True
 
 
