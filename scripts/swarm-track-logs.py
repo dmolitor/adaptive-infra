@@ -16,12 +16,10 @@ if __name__ == "__main__":
     con = Connection(
         host=ip,
         user="ubuntu",
-        connect_kwargs={
-            "key_filename": f"{os.path.expanduser(key_fp)}"
-        },
+        connect_kwargs={"key_filename": f"{os.path.expanduser(key_fp)}"},
     )
     con.open()
     if not con.is_connected:
         raise ConnectionError(f"Failed to connect to {con.user}@{con.host}")
-    
+
     con.run(f"sudo docker service logs -f adaptive_stack_{service}")
