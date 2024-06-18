@@ -61,13 +61,13 @@ class ResponseForm:
         responses = responses_req.json()
         prolific_ids = [response["prolific_id"] for response in responses]
         # If a Prolific ID has already responded, mark as garbage
-        if self.prolific_id is not None and self.prolific_id in prolific_ids:
+        if self.prolific_id in prolific_ids:
             garbage = True
         if not self.in_usa:
             garbage = True
         if self.commitment in ["no", "unsure"]:
             garbage = True
-        if self.captcha is None or self.captcha.lower() != "purple":
+        if self.captcha.lower() != "purple":
             garbage = True
         if self.option_attention != self.option_attention_truth:
             garbage = True

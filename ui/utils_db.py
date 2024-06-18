@@ -31,12 +31,12 @@ def with_retry(f):
 
     def wrapper(*args, **kwargs):
         iter = 0
-        while iter < 5:
+        while iter < 10:
             try:
                 result = f(*args, **kwargs)
                 return result
             except Exception:
-                time.sleep(0.05)
+                time.sleep(0.1)
                 iter += 1
                 exception_message = traceback.format_exc()
         raise ConnectionError(exception_message)
@@ -184,7 +184,6 @@ def submit_response_noconsent(form: dict) -> None:
     req.post(url, json=resp_form).raise_for_status()
 
 
-@with_retry
 def update_batch(batch_id: int, remaining: int, maximum: bool):
     """
     Decrement batch counter, and create new batch/pi/parameters as necessary.

@@ -20,7 +20,7 @@ These steps include:
 rng = np.random.default_rng(seed=None)
 
 
-def draw_arms(params: dict, max: bool, n_sim: int = int(1e6)) -> dict:
+def draw_arms(params: dict, max: bool, n_sim: int = int(1e5)) -> dict:
     """
     Take parameters for each bandit arm's posterior beta distribution,
     pull `n_sim` draws from the distribution, and calculate cumulative fraction

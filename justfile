@@ -83,6 +83,10 @@ docker-build-and-push:
 prolific-studies: venv
   @{{python}} {{justfile_directory()}}/scripts/prolific-studies-list.py {{prolific_token}}
 
+# Track the Docker swarm logs
+track-swarm-logs ip key service="api":
+  @{{python}} {{justfile_directory()}}/scripts/swarm-track-logs.py {{ip}} {{key}} {{service}}
+
 # Terminate the running application and corresponding AWS server.
 terminate: check-python venv aws-swarm-terminate
 
