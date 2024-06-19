@@ -30,8 +30,9 @@ json_pprint(req.get(base_url + "/bandit/pi").json())
 batches = {
     x["batch"]["id"]: {
         "remaining": x["batch"]["remaining"],
-        "active": x["batch"]["active"]
-    } for x in req.get(base_url + "/bandit/batch").json()
+        "active": x["batch"]["active"],
+    }
+    for x in req.get(base_url + "/bandit/batch").json()
 }
 json_pprint(batches)
 
@@ -50,34 +51,22 @@ perc_discriminated = round(
     responses[responses.garbage != True].discriminated.sum()
     / len(responses[responses.garbage != True])
     * 100,
-    1
+    1,
 )
 n_by_sex = responses[responses.garbage != True].groupby(["sex"]).count()
 n_female = n_by_sex.filter(like="female", axis=0)["id"].iloc[0]
 n_male = n_by_sex.filter(like="male", axis=0)["id"].iloc[1]
 mean_age = responses[responses.garbage != True].age.mean()
 median_age = responses[responses.garbage != True].age.median()
-eth_counts = (
-    responses[responses.garbage != True]["ethnicity"].value_counts(normalize=True)
+eth_counts = responses[responses.garbage != True]["ethnicity"].value_counts(
+    normalize=True
 )
-ethnicity = (
-    "\n".join(
-        [
-            f"\t{eth}: {round(count * 100, 1)}%"
-            for eth, count in eth_counts.items()
-        ]
-    )
+ethnicity = "\n".join(
+    [f"\t{eth}: {round(count * 100, 1)}%" for eth, count in eth_counts.items()]
 )
-race_counts = (
-    responses[responses.garbage != True]["race"].value_counts(normalize=True)
-)
-race = (
-    "\n".join(
-        [
-            f"\t{race}: {round(count * 100, 1)}%"
-            for race, count in race_counts.items()
-        ]
-    )
+race_counts = responses[responses.garbage != True]["race"].value_counts(normalize=True)
+race = "\n".join(
+    [f"\t{race}: {round(count * 100, 1)}%" for race, count in race_counts.items()]
 )
 
 
