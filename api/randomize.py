@@ -58,7 +58,7 @@ def draw_arms(params: dict, max: bool, n_sim: int = int(1e5)) -> dict:
     # Reformat as a dictionary with arm labels as keys
     arm_means_dict = {}
     for key, value in zip(params.keys(), arm_means):
-        arm_means_dict[key] = value
+        arm_means_dict[key] = float(value)
     return arm_means_dict
 
 

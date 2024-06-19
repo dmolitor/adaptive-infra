@@ -64,7 +64,6 @@ def current_context(batch_id: int):
     return context
 
 
-@with_retry
 def current_pi():
     """Retrieves the current-batch individual pi values"""
     cur_batch = current_batch()
@@ -77,7 +76,6 @@ def current_pi():
     return pi_vals
 
 
-@with_retry
 def decrement_batch_remaining(batch_id: int, active: bool = True):
     """Decrement the batch `remaining` parameter. Can also deactivate batch"""
     (
@@ -104,7 +102,6 @@ def get_batch_id(batch_id: int):
     return batch
 
 
-@with_retry
 def increment_batch(
     batch_id: int, remaining: int, active: bool = True, maximum: bool = True
 ):
@@ -122,7 +119,6 @@ def increment_batch(
     )
 
 
-@with_retry
 def initialize_bandit(bandit: dict) -> None:
     """Function to create the initial Bandit database table"""
     bandit_req = req.get(api_url + "/bandit")
@@ -167,14 +163,12 @@ def submit(
         pause_prolific_study()
 
 
-@with_retry
 def submit_response(form: dict) -> None:
     """Submit a filled-out survey form via the API"""
     url = api_url + "/responses"
     req.post(url, json=form).raise_for_status()
 
 
-@with_retry
 def submit_response_noconsent(form: dict) -> None:
     """Submit a survey form when consent is declined via the API"""
     url = api_url + "/responses/noconsent"
