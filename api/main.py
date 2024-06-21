@@ -169,8 +169,8 @@ def bandit_batches(batch_id: int | None = None):
 
 # Endpoint to get the current Batch object
 @api.get("/bandit/batch/current")
-def cur_batch():
-    batch = get_current_batch(engine)
+def cur_batch(deactivate: bool = False):
+    batch = get_current_batch(engine, deactivate)
     return batch
 
 

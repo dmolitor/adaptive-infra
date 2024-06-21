@@ -45,9 +45,11 @@ def with_retry(f):
 
 
 @with_retry
-def current_batch():
+def current_batch(deactivate: bool = False):
     """Retrieves the current batch information"""
-    current_batch_request = req.get(api_url + "/bandit/batch/current/")
+    current_batch_request = req.get(
+        api_url + f"/bandit/batch/current/?deactivate={deactivate}"
+    )
     current_batch_request.raise_for_status()
     current_batch = current_batch_request.json()
     return current_batch
