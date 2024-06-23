@@ -16,7 +16,7 @@ from db import (
     get_pi,
     get_responses,
     increment_batch,
-    is_duplicate_id
+    is_duplicate_id,
 )
 from fastapi import FastAPI
 from randomize import html_format, randomize
@@ -95,6 +95,7 @@ def no_consent_gen(response: NoConsentJSON):
 @api.post("/responses/duplicated")
 def is_duplicate(prolific_id: str):
     return is_duplicate_id(prolific_id, engine)
+
 
 # Endpoints for working with the Bandit table -----------------------------
 

@@ -136,6 +136,7 @@ def is_duplicate_id(prolific_id: str) -> bool:
     resp.raise_for_status()
     return resp.json()
 
+
 @with_retry
 def num_responses() -> int:
     resp_request = req.get(api_url + "/responses")
