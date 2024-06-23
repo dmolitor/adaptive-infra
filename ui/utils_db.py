@@ -130,6 +130,13 @@ def initialize_bandit(bandit: dict) -> None:
 
 
 @with_retry
+def is_duplicate_id(prolific_id: str) -> bool:
+    """Checks if user response already exists"""
+    resp = req.post(api_url + f"/responses/duplicated?prolific_id={prolific_id}")
+    resp.raise_for_status()
+    return resp.json()
+
+@with_retry
 def num_responses() -> int:
     resp_request = req.get(api_url + "/responses")
     resp_request.raise_for_status()
@@ -144,10 +151,15 @@ def submit(
     noconsent: bool = False,
 ) -> None:
     """
-    Handles the logistics of submitting the response form. If the form is
+    Handles the logistics of submitting the response form. If the individual
+    has already submitted a response, nothing happens. Otherwise, if the form is
     flagged as "noconsent" it will be submitted to the NoConsent table,
     otherwise it is stored in the Responses table.
     """
+    duplicate_response = is_duplicate_id(response_form.prolific_id)
+    # If the response is a duplicate we just want to do nothing.
+    if duplicate_response:
+        return None
     response_form.validate_data()
     response_form_data = response_form.generate_form()
     if noconsent:

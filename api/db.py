@@ -375,3 +375,15 @@ def increment_batch(
         params=params,
         engine=engine,
     )
+
+
+def is_duplicate_id(prolific_id: str, engine: Engine) -> bool:
+    """Checks if a prolific ID has already submitted a response"""
+    with Session(engine) as session:
+        resp_obj = session.exec(
+            select(Response).where(Response.prolific_id == prolific_id)
+        ).all()
+        if len(resp_obj) > 0:
+            return True
+        else:
+            return False

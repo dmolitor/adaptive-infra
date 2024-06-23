@@ -1,7 +1,7 @@
 import requests as req
 from shiny import Session, ui
 from urllib.parse import urlparse, parse_qs
-from utils_db import api_url
+from utils_db import api_url, is_duplicate_id
 
 """
 This script defines utility functions for interacting with the user interface.
@@ -56,12 +56,8 @@ class ResponseForm:
     def validate_data(self) -> None:
         # Indicator if the response is garbage or not
         garbage = False
-        responses_req = req.get(api_url + "/responses")
-        responses_req.raise_for_status()
-        responses = responses_req.json()
-        prolific_ids = [response["prolific_id"] for response in responses]
         # If a Prolific ID has already responded, mark as garbage
-        if self.prolific_id in prolific_ids:
+        if self.prolific_id is not None and is_duplicate_id(self.prolific_id):
             garbage = True
         if not self.in_usa:
             garbage = True
@@ -168,8 +164,10 @@ def which_is_college_ed(context: dict) -> int:
     candidate2 = context["second"]
     if candidate1["education"] == "College degree":
         return 0
-    else:
+    elif candidate2["education"] == "College degree":
         return 1
+    else:
+        raise ValueError("Candidate(s) have invalid education value")
 
 
 # Define small JS scripts to scroll to the top and bottom of a page and to
