@@ -7,7 +7,7 @@ import requests as req
 # Set port element to 80 for Docker testing;
 base_url = "http://localhost:80"
 # Execute the lines below if api is hosted on a server
-# server_ip = "54.237.222.52"
+# server_ip = ""
 # base_url = f"http://{server_ip}:80"
 
 
@@ -30,21 +30,42 @@ json_pprint(req.get(base_url + "/bandit/pi").json())
 batches = {
     x["batch"]["id"]: {
         "remaining": x["batch"]["remaining"],
-        "active": x["batch"]["active"],
+        "active": x["batch"]["active"]
     }
     for x in req.get(base_url + "/bandit/batch").json()
 }
 json_pprint(batches)
 
 # Print all responses
-json_pprint(req.get(base_url + "/responses").json())
+responses = req.get(base_url + "/responses").json()
+json_pprint(
+    sorted(
+        [
+            {
+                "id": x["id"],
+                "batch": x["batch_id"],
+                "context": x["context_batch_id"],
+                "prolific_id": x["prolific_id"],
+                "garbage": x["garbage"]
+            }
+            for x in responses
+        ],
+        key=lambda x: x["batch"]
+    )
+)
+
+# Check if a prolific ID exists in the database
+id = ""
+req.post(base_url + f"/responses/duplicated?prolific_id={id}").json()
+
 # Print all no-consent records
 json_pprint(req.get(base_url + "/responses/noconsent").json())
 
 # Get the current batch id
-json_pprint(req.get(base_url + "/bandit/batch/current/").json())
+deac = False
+json_pprint(req.get(base_url + f"/bandit/batch/current?deactivate={deac}").json())
 
-# Get all responses as a DataFrame
+# Get live summary of responses
 responses = pd.DataFrame(req.get(base_url + "/responses").json())
 responses_noconsent = pd.DataFrame(req.get(base_url + "/responses/noconsent").json())
 perc_discriminated = round(
