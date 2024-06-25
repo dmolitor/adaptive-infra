@@ -1,4 +1,5 @@
-from init_db import BATCH_SIZE
+from init_db import BATCH_SIZE, PROB_MAXIMIZE
+import os
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
@@ -117,9 +118,9 @@ def server(input: Inputs, output: Outputs, session: Session):
             response_form.consent = False
             # Submit the response form and handle batch/parameter updating
             # Get the current batch
-            cur_batch = current_batch()
+            cur_batch = current_batch(deactivate=True)
             response_form.batch_id = cur_batch["id"]
-            submit(response_form, None, None, noconsent=True)
+            submit(response_form, None, None, maximum=PROB_MAXIMIZE, noconsent=True)
             # Redirect to the Prolific No-Consent page
             await session.send_custom_message(
                 "redirect_url", prolific_redirect("noconsent")
@@ -365,10 +366,12 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Update the response form
             response_form.option_attention = int(attention)
             # Ensure user is rolled into the current active batch
-            cur_batch = current_batch()
+            cur_batch = current_batch(deactivate=True)
             response_form.batch_id = cur_batch["id"]
             # Submit the response form and handle batch/parameter updating
-            submit(response_form, response_form.batch_id, BATCH_SIZE)
+            submit(
+                response_form, response_form.batch_id, BATCH_SIZE, maximum=PROB_MAXIMIZE
+            )
             # Now redirect to Prolific
             await session.send_custom_message(
                 "redirect_url", prolific_redirect("valid")

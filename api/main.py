@@ -16,6 +16,7 @@ from db import (
     get_pi,
     get_responses,
     increment_batch,
+    is_duplicate_id,
 )
 from fastapi import FastAPI
 from randomize import html_format, randomize
@@ -88,6 +89,12 @@ def no_consent_gen(response: NoConsentJSON):
         batch_id=response.batch_id, consent=response.consent, engine=engine
     )
     return True
+
+
+# Endpoint for checking if user has already submitted response
+@api.post("/responses/duplicated")
+def is_duplicate(prolific_id: str):
+    return is_duplicate_id(prolific_id, engine)
 
 
 # Endpoints for working with the Bandit table -----------------------------
@@ -169,8 +176,8 @@ def bandit_batches(batch_id: int | None = None):
 
 # Endpoint to get the current Batch object
 @api.get("/bandit/batch/current")
-def cur_batch():
-    batch = get_current_batch(engine)
+def cur_batch(deactivate: bool = False):
+    batch = get_current_batch(engine, deactivate)
     return batch
 
 
@@ -188,7 +195,10 @@ def increment_bandit_batch(batch: BatchJSON):
     batch_id = batch.batch_id
     batch_remaining = batch.remaining
     batch_active = batch.active
-    increment_batch(batch_id, batch_remaining, batch_active, engine)
+    batch_max = batch.maximum
+    increment_batch(
+        batch_id, batch_remaining, batch_active, maximum=batch_max, engine=engine
+    )
     return True
 
 

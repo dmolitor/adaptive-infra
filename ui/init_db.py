@@ -9,6 +9,15 @@ initializes the batch size for the current experiment.
 
 # Set the batch size!
 BATCH_SIZE = int(os.environ["BATCH_SIZE"])
+# Get environment variable specifying whether to maximize or minimize arm probs
+PROB_MAXIMIZE = os.environ["PROB_MAXIMIZE"]
+if PROB_MAXIMIZE.lower() == "true":
+    PROB_MAXIMIZE = True
+elif PROB_MAXIMIZE.lower() == "false":
+    PROB_MAXIMIZE = False
+else:
+    raise ValueError(f"Env var PROB_MAXIMIZE is an invalid value: {PROB_MAXIMIZE}")
+
 
 # Initialize the bandit table if it does not already exist
 # Initialize the bandit (all its arms and corresponding parameters)

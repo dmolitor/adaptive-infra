@@ -15,6 +15,15 @@ def create_tables(engine: Engine):
     SQLModel.metadata.create_all(engine)
 
 
+def deactivate_batch(batch_id: int, engine: Engine):
+    """Deactivate a currently active batch"""
+    with Session(engine) as session:
+        batch_obj = session.exec(select(Batch).where(Batch.id == batch_id)).one()
+        batch_obj.active = False
+        session.add(batch_obj)
+        session.commit()
+
+
 def decrement_batch(batch_id: int, active: bool, engine: Engine):
     """Decrement the `remaining` parameter of a given batch"""
     with Session(engine) as session:
@@ -256,13 +265,23 @@ def get_batches(engine):
     return out
 
 
-def get_current_batch(engine: Engine):
+def get_current_batch(engine: Engine, deactivate: bool = False):
     """Get the batch id for the current batch"""
+    print(f"Deactivating: {deactivate}")
     with Session(engine) as session:
-        batch = session.exec(
+        batches = session.exec(
             select(Batch).where(Batch.remaining > 0).where(Batch.active == True)
-        ).one()
-    return batch
+        ).all()
+        # If batch is greater than 1 then there are multiple active batches.
+        # In this case, all batches that are not the most recent (the one with...
+        # the highest value for its id) should be deactivated.
+        current_batch: Batch = max(batches, key=lambda x: x.id)
+        if len(batches) > 1 and deactivate:
+            ids = [batch.id for batch in batches]
+            for id in ids:
+                if id != current_batch.id:
+                    deactivate_batch(batch_id=id, engine=engine)
+    return current_batch
 
 
 def get_metadata(engine):
@@ -306,7 +325,9 @@ def get_responses(engine: None | Engine):
     return responses
 
 
-def increment_batch(batch_id: int, remaining: int, active: bool, engine: None | Engine):
+def increment_batch(
+    batch_id: int, remaining: int, active: bool, maximum: bool, engine: None | Engine
+):
     bandit = get_bandit(engine=engine)
     # For each arm, collect successes and failures
     labels = []
@@ -343,7 +364,8 @@ def increment_batch(batch_id: int, remaining: int, active: bool, engine: None | 
                 "beta": arm_params.beta + failures,
             }
     # Construct updated Pi value for each arm
-    pi = draw_arms(params)
+    pi = draw_arms(params, max=maximum)
+    print(f"{pi}")
     # Now update the `Batch`, `Parameters` and `Pi` tables
     generate_batch(
         labels=labels,
@@ -353,3 +375,15 @@ def increment_batch(batch_id: int, remaining: int, active: bool, engine: None | 
         params=params,
         engine=engine,
     )
+
+
+def is_duplicate_id(prolific_id: str, engine: Engine) -> bool:
+    """Checks if a prolific ID has already submitted a response"""
+    with Session(engine) as session:
+        resp_obj = session.exec(
+            select(Response).where(Response.prolific_id == prolific_id)
+        ).all()
+        if len(resp_obj) > 0:
+            return True
+        else:
+            return False

@@ -31,12 +31,12 @@ def with_retry(f):
 
     def wrapper(*args, **kwargs):
         iter = 0
-        while iter < 5:
+        while iter < 10:
             try:
                 result = f(*args, **kwargs)
                 return result
             except Exception:
-                time.sleep(0.05)
+                time.sleep(0.1)
                 iter += 1
                 exception_message = traceback.format_exc()
         raise ConnectionError(exception_message)
@@ -45,9 +45,11 @@ def with_retry(f):
 
 
 @with_retry
-def current_batch():
+def current_batch(deactivate: bool = False):
     """Retrieves the current batch information"""
-    current_batch_request = req.get(api_url + "/bandit/batch/current/")
+    current_batch_request = req.get(
+        api_url + f"/bandit/batch/current/?deactivate={deactivate}"
+    )
     current_batch_request.raise_for_status()
     current_batch = current_batch_request.json()
     return current_batch
@@ -64,7 +66,6 @@ def current_context(batch_id: int):
     return context
 
 
-@with_retry
 def current_pi():
     """Retrieves the current-batch individual pi values"""
     cur_batch = current_batch()
@@ -77,7 +78,6 @@ def current_pi():
     return pi_vals
 
 
-@with_retry
 def decrement_batch_remaining(batch_id: int, active: bool = True):
     """Decrement the batch `remaining` parameter. Can also deactivate batch"""
     (
@@ -104,8 +104,9 @@ def get_batch_id(batch_id: int):
     return batch
 
 
-@with_retry
-def increment_batch(batch_id: int, remaining: int, active: bool = True):
+def increment_batch(
+    batch_id: int, remaining: int, active: bool = True, maximum: bool = True
+):
     """Ping the api to create a new batch in the Batch database table"""
     (
         req.post(
@@ -114,18 +115,26 @@ def increment_batch(batch_id: int, remaining: int, active: bool = True):
                 "batch_id": batch_id,
                 "remaining": remaining,
                 "active": active,
+                "maximum": maximum,
             },
         ).raise_for_status()
     )
 
 
-@with_retry
 def initialize_bandit(bandit: dict) -> None:
     """Function to create the initial Bandit database table"""
     bandit_req = req.get(api_url + "/bandit")
     bandit_req.raise_for_status()
     if not bandit_req.json():
         req.post(api_url + "/bandit", json=bandit).raise_for_status()
+
+
+@with_retry
+def is_duplicate_id(prolific_id: str) -> bool:
+    """Checks if user response already exists"""
+    resp = req.post(api_url + f"/responses/duplicated?prolific_id={prolific_id}")
+    resp.raise_for_status()
+    return resp.json()
 
 
 @with_retry
@@ -139,13 +148,19 @@ def submit(
     response_form,
     batch_id: int | None,
     batch_size: int | None,
+    maximum: bool | None,
     noconsent: bool = False,
 ) -> None:
     """
-    Handles the logistics of submitting the response form. If the form is
+    Handles the logistics of submitting the response form. If the individual
+    has already submitted a response, nothing happens. Otherwise, if the form is
     flagged as "noconsent" it will be submitted to the NoConsent table,
     otherwise it is stored in the Responses table.
     """
+    duplicate_response = is_duplicate_id(response_form.prolific_id)
+    # If the response is a duplicate we just want to do nothing.
+    if duplicate_response:
+        return None
     response_form.validate_data()
     response_form_data = response_form.generate_form()
     if noconsent:
@@ -155,7 +170,7 @@ def submit(
     # Update batches and corresponding parameters if the form is valid
     # and if we have ended the warm-up phase of receiving responses
     if not response_form.garbage and finished_warmup():
-        update_batch(batch_id, batch_size)
+        update_batch(batch_id, batch_size, maximum=maximum)
     # If we have exceeded the max number of survey responses, pause the
     # Prolific study
     if num_responses() >= STUDY_MAX_N:
@@ -163,14 +178,12 @@ def submit(
         pause_prolific_study()
 
 
-@with_retry
 def submit_response(form: dict) -> None:
     """Submit a filled-out survey form via the API"""
     url = api_url + "/responses"
     req.post(url, json=form).raise_for_status()
 
 
-@with_retry
 def submit_response_noconsent(form: dict) -> None:
     """Submit a survey form when consent is declined via the API"""
     url = api_url + "/responses/noconsent"
@@ -180,8 +193,7 @@ def submit_response_noconsent(form: dict) -> None:
     req.post(url, json=resp_form).raise_for_status()
 
 
-@with_retry
-def update_batch(batch_id: int, remaining: int):
+def update_batch(batch_id: int, remaining: int, maximum: bool):
     """
     Decrement batch counter, and create new batch/pi/parameters as necessary.
     Also check if any arm exceeds the stoppage threshold. If so, pause the
@@ -192,7 +204,7 @@ def update_batch(batch_id: int, remaining: int):
     batch_is_active = batch["active"]
     if ready_to_update and batch_is_active:
         decrement_batch_remaining(batch["id"], active=False)
-        increment_batch(batch["id"], remaining=remaining)
+        increment_batch(batch["id"], remaining=remaining, maximum=maximum)
         # Check if any of the new arm pi values exceed stoppage threshold
         pi_vals = current_pi()
         print(f"Current pi vals: {pi_vals}")
