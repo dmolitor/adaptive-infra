@@ -12,6 +12,23 @@ Infrastructure for adaptive learning with surveys and experiments.
 
 - [Docker Desktop](https://docs.docker.com/desktop/).
 
+## Running locally
+To get the stack running locally, it's as simple as:
+
+```shell
+docker compose up -d
+```
+
+To run using [Compose Watch](https://docs.docker.com/compose/file-watch/):
+```shell
+docker compose watch
+```
+
+To shut everything down:
+```shell
+docker compose down
+```
+
 ## Services
 The application is comprised of the following services:
 
@@ -28,23 +45,6 @@ The application is comprised of the following services:
     This service utilizes the official PostgreSQL Docker image to store
     all relevant data and user responses.
 
-## Running locally
-To run the services locally:
-
-```shell
-docker compose up -d
-```
-
-To run using [Compose Watch](https://docs.docker.com/compose/file-watch/):
-```shell
-docker compose watch
-```
-
-To shut everything down:
-```shell
-docker compose down
-```
-
 ## Build/Deploy
 
 This project uses [just](https://github.com/casey/just) to organize building/deployment
@@ -60,6 +60,7 @@ Available recipes:
     aws-swarm-launch      # Launch a Docker Swarm on an AWS EC2 server
     aws-swarm-terminate   # Terminate any active Docker Swarm AWS server
     aws-volume            # Provision an AWS EBS volume
+    black                 # Format with Black
     check-aws             # Check if AWS CLI is installed
     check-dependencies    # Check all deploy dependencies
     check-docker          # Check if Docker is installed
@@ -69,7 +70,9 @@ Available recipes:
     default               # List all available recipes
     deploy                # Deploy the application to an AWS-hosted server
     docker-build-and-push # Build the app and api Docker images
+    prolific-studies      # List all Prolific studies in the Adaptive Conjoint project
     terminate             # Terminate the running application and corresponding AWS server.
+    track-swarm-logs ip key service="api" # Track the Docker swarm logs
     venv                  # Activate virtual environment and install Python dependencies
 To execute a recipe: just [recipe-name]
 ```
