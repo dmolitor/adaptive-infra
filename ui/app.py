@@ -1,5 +1,8 @@
+# Remove warnings from the requests module (known "issue")
+import warnings
+warnings.filterwarnings("ignore")
+
 from init_db import BATCH_SIZE, PROB_MAXIMIZE
-import os
 from pathlib import Path
 from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch

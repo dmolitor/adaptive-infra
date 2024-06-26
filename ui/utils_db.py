@@ -23,7 +23,7 @@ else:
     network = "api"
 
 # Construct the url for querying the API
-api_url = f"http://{network}:{API_HOST_PORT}"
+api_url = f"https://{network}:{API_HOST_PORT}"
 
 
 def with_retry(f):
@@ -48,7 +48,8 @@ def with_retry(f):
 def current_batch(deactivate: bool = False):
     """Retrieves the current batch information"""
     current_batch_request = req.get(
-        api_url + f"/bandit/batch/current/?deactivate={deactivate}"
+        api_url + f"/bandit/batch/current/?deactivate={deactivate}",
+        verify=False
     )
     current_batch_request.raise_for_status()
     current_batch = current_batch_request.json()
@@ -58,7 +59,10 @@ def current_batch(deactivate: bool = False):
 @with_retry
 def current_context(batch_id: int):
     """Retrieves (randomly) the context for the current user session"""
-    context_request = req.get(api_url + f"/randomize?batch_id={batch_id}")
+    context_request = req.get(
+        api_url + f"/randomize?batch_id={batch_id}",
+        verify=False
+    )
     context_request.raise_for_status()
     context = context_request.json()
     ## TODO: Remove this at some point (currently helpful for interactive use)
@@ -69,7 +73,10 @@ def current_context(batch_id: int):
 def current_pi():
     """Retrieves the current-batch individual pi values"""
     cur_batch = current_batch()
-    resp = req.get(api_url + "/bandit/batch")
+    resp = req.get(
+        api_url + "/bandit/batch",
+        verify=False
+    )
     resp.raise_for_status()
     [cur_params] = [x for x in resp.json() if x["batch"]["id"] == cur_batch["id"]]
     pi_vals = [x["pi"] for x in cur_params["pi"]]
@@ -84,7 +91,8 @@ def decrement_batch_remaining(batch_id: int, active: bool = True):
         req.post(
             api_url
             + f"/bandit/batch/decrement?batch_id={str(batch_id)}"
-            + f"&active={active}"
+            + f"&active={active}",
+            verify=False
         ).raise_for_status()
     )
 
@@ -98,7 +106,10 @@ def finished_warmup() -> True:
 @with_retry
 def get_batch_id(batch_id: int):
     """Get specific batch"""
-    batch_request = req.get(api_url + f"/bandit/batch?batch_id={str(batch_id)}")
+    batch_request = req.get(
+        api_url + f"/bandit/batch?batch_id={str(batch_id)}",
+        verify=False
+    )
     batch_request.raise_for_status()
     batch = batch_request.json()
     return batch
@@ -117,29 +128,33 @@ def increment_batch(
                 "active": active,
                 "maximum": maximum,
             },
+            verify=False
         ).raise_for_status()
     )
 
 
 def initialize_bandit(bandit: dict) -> None:
     """Function to create the initial Bandit database table"""
-    bandit_req = req.get(api_url + "/bandit")
+    bandit_req = req.get(api_url + "/bandit", verify=False)
     bandit_req.raise_for_status()
     if not bandit_req.json():
-        req.post(api_url + "/bandit", json=bandit).raise_for_status()
+        req.post(api_url + "/bandit", json=bandit, verify=False).raise_for_status()
 
 
 @with_retry
 def is_duplicate_id(prolific_id: str) -> bool:
     """Checks if user response already exists"""
-    resp = req.post(api_url + f"/responses/duplicated?prolific_id={prolific_id}")
+    resp = req.post(
+        api_url + f"/responses/duplicated?prolific_id={prolific_id}",
+        verify=False
+    )
     resp.raise_for_status()
     return resp.json()
 
 
 @with_retry
 def num_responses() -> int:
-    resp_request = req.get(api_url + "/responses")
+    resp_request = req.get(api_url + "/responses", verify=False)
     resp_request.raise_for_status()
     return len(resp_request.json())
 
@@ -181,7 +196,7 @@ def submit(
 def submit_response(form: dict) -> None:
     """Submit a filled-out survey form via the API"""
     url = api_url + "/responses"
-    req.post(url, json=form).raise_for_status()
+    req.post(url, json=form, verify=False).raise_for_status()
 
 
 def submit_response_noconsent(form: dict) -> None:
@@ -190,7 +205,7 @@ def submit_response_noconsent(form: dict) -> None:
     resp_form = {}
     for key in ["batch_id", "consent"]:
         resp_form[key] = form[key]
-    req.post(url, json=resp_form).raise_for_status()
+    req.post(url, json=resp_form, verify=False).raise_for_status()
 
 
 def update_batch(batch_id: int, remaining: int, maximum: bool):

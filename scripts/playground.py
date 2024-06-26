@@ -1,3 +1,7 @@
+# Remove warnings from the requests module (known "issue")
+import warnings
+warnings.filterwarnings("ignore")
+
 import json
 import pandas as pd
 import requests as req
@@ -5,7 +9,7 @@ import requests as req
 """Interact with the API when testing locally"""
 
 # Set port element to 80 for Docker testing;
-base_url = "http://localhost:80"
+base_url = "https://localhost:80"
 # Execute the lines below if api is hosted on a server
 # server_ip = ""
 # base_url = f"http://{server_ip}:80"
@@ -16,28 +20,28 @@ def json_pprint(x):
 
 
 # Make sure it's alive
-print(req.get(base_url).text)
+print(req.get(base_url, verify=False).text)
 
 # Retrieve the bandit table
-json_pprint(req.get(base_url + "/bandit").json())
+json_pprint(req.get(base_url + "/bandit", verify=False).json())
 
 # Print bandit parameters
-json_pprint(req.get(base_url + "/bandit/parameters").json())
+json_pprint(req.get(base_url + "/bandit/parameters", verify=False).json())
 
 # Print the batch and Pi table
-json_pprint(req.get(base_url + "/bandit/batch").json())
-json_pprint(req.get(base_url + "/bandit/pi").json())
+json_pprint(req.get(base_url + "/bandit/batch", verify=False).json())
+json_pprint(req.get(base_url + "/bandit/pi", verify=False).json())
 batches = {
     x["batch"]["id"]: {
         "remaining": x["batch"]["remaining"],
         "active": x["batch"]["active"]
     }
-    for x in req.get(base_url + "/bandit/batch").json()
+    for x in req.get(base_url + "/bandit/batch", verify=False).json()
 }
 json_pprint(batches)
 
 # Print all responses
-responses = req.get(base_url + "/responses").json()
+responses = req.get(base_url + "/responses", verify=False).json()
 json_pprint(
     sorted(
         [
@@ -56,18 +60,18 @@ json_pprint(
 
 # Check if a prolific ID exists in the database
 id = ""
-req.post(base_url + f"/responses/duplicated?prolific_id={id}").json()
+req.post(base_url + f"/responses/duplicated?prolific_id={id}", verify=False).json()
 
 # Print all no-consent records
-json_pprint(req.get(base_url + "/responses/noconsent").json())
+json_pprint(req.get(base_url + "/responses/noconsent", verify=False).json())
 
 # Get the current batch id
 deac = False
-json_pprint(req.get(base_url + f"/bandit/batch/current?deactivate={deac}").json())
+json_pprint(req.get(base_url + f"/bandit/batch/current?deactivate={deac}", verify=False).json())
 
 # Get live summary of responses
-responses = pd.DataFrame(req.get(base_url + "/responses").json())
-responses_noconsent = pd.DataFrame(req.get(base_url + "/responses/noconsent").json())
+responses = pd.DataFrame(req.get(base_url + "/responses", verify=False).json())
+responses_noconsent = pd.DataFrame(req.get(base_url + "/responses/noconsent", verify=False).json())
 perc_discriminated = round(
     responses[responses.garbage != True].discriminated.sum()
     / len(responses[responses.garbage != True])
@@ -98,7 +102,7 @@ print(
     f"{round(responses.garbage.sum()/len(responses) * 100, 1)}%"
     + " of responses are garbage\n"
     "Current active batch id: "
-    + f"{req.get(base_url + '/bandit/batch/current/').json()['id']}\n"
+    + f"{req.get(base_url + '/bandit/batch/current/', verify=False).json()['id']}\n"
     + f"{perc_discriminated}% of valid responses have discriminated\n"
     + "Respondent sex:\n"
     + f"    - Female: {round(n_female/(n_female + n_male) * 100, 1)}%\n"
