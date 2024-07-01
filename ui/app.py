@@ -5,12 +5,13 @@ from shiny import App, Inputs, Outputs, Session, reactive, ui
 import shinyswatch
 from ui_consent import screening_questions
 from ui_demographics import demographics_ui
+from ui_duplicate import duplicates_ui
 from ui_intro import intro_ui
 from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
 from ui_postsurvey import attention_ui
 from ui_survey import survey_ui
-from utils_db import current_batch, current_context, submit
+from utils_db import current_batch, current_context, submit, user_batch, user_context
 from utils_prolific import prolific_redirect
 from utils_ui import (
     empty_age,
@@ -61,6 +62,7 @@ app_ui = ui.page_fluid(
         no_consent_ui,
         demographics_ui,
         attention_ui,
+        duplicates_ui,
         id="hidden_tabs",
     ),
 )
@@ -71,6 +73,10 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     # Initialize the response form
     response_form = ResponseForm()
+
+    # Get the user batch information
+    batch = user_batch(remaining=BATCH_SIZE, maximum=PROB_MAXIMIZE)
+    context = user_context(batch["id"])
 
     # Logic for 'Next Page' button on landing page.
     #
@@ -120,7 +126,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Get the current batch
             cur_batch = current_batch(deactivate=True)
             response_form.batch_id = cur_batch["id"]
-            submit(response_form, None, None, maximum=PROB_MAXIMIZE, noconsent=True)
+            submit(response_form=response_form, noconsent=True)
             # Redirect to the Prolific No-Consent page
             await session.send_custom_message(
                 "redirect_url", prolific_redirect("noconsent")
@@ -286,21 +292,17 @@ def server(input: Inputs, output: Outputs, session: Session):
             proceed = False
         if proceed:
             await session.send_custom_message("scroll_top", "")
-            # Retrieve the current context and dynamically generate the
-            # survey tables. See `/ui/ui_survey.py`!
-            cur_batch = current_batch()
-            cur_context = current_context(cur_batch["id"])
 
             ui.insert_ui(
-                ui.HTML(cur_context["html_content"]),
+                ui.HTML(context["html_content"]),
                 selector="#options",
                 where="afterBegin",
             )
             ui.update_navs("hidden_tabs", selected="panel_survey")
             # Update the response form
-            response_form.arm_id = cur_context["arm_id"]
-            response_form.context_batch_id = cur_batch["id"]
-            response_form.option_attention_truth = which_is_college_ed(cur_context)
+            response_form.arm_id = context["arm_id"]
+            response_form.context_batch_id = batch["id"]
+            response_form.option_attention_truth = which_is_college_ed(context)
             if resp_age_text != "":
                 response_form.age = int(resp_age_text)
             if "race_skip" not in resp_race:
@@ -365,17 +367,15 @@ def server(input: Inputs, output: Outputs, session: Session):
             ui.update_navs("hidden_tabs", selected="panel_outro")
             # Update the response form
             response_form.option_attention = int(attention)
-            # Ensure user is rolled into the current active batch
-            cur_batch = current_batch(deactivate=True)
-            response_form.batch_id = cur_batch["id"]
-            # Submit the response form and handle batch/parameter updating
-            submit(
-                response_form, response_form.batch_id, BATCH_SIZE, maximum=PROB_MAXIMIZE
-            )
-            # Now redirect to Prolific
+            # The line below this is a vestige of how the survey was originally
+            # designed. Delete later!!!
+            response_form.batch_id = batch["id"]
+            # Redirect user to Prolific
             await session.send_custom_message(
                 "redirect_url", prolific_redirect("valid")
             )
+            # Submit the response form in the background
+            submit(response_form=response_form)
 
 
 # Runs the app. Intakes the UI and the server logic from above.

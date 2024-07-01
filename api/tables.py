@@ -93,7 +93,7 @@ class Parameters(SQLModel, table=True):
 
 class Pi(SQLModel, table=True):
     """
-    A class for recording the percentage of 1000 realizations in which
+    A class for recording the percentage of Monte Carlo simulations in which
     each arm is the most (or least) discriminatory arm.
     """
 

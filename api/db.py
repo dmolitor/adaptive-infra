@@ -1,3 +1,4 @@
+import json
 from randomize import draw_arms
 from sqlalchemy import Engine
 from sqlmodel import Session, SQLModel, select
@@ -73,6 +74,7 @@ def generate_batch(
     generate_parameters(labels=labels, batch_id=batch_id, params=params, engine=engine)
     # Generate new values in the `Pi` table
     generate_pi(labels=labels, batch_id=batch_id, pi=pi, engine=engine)
+    return batch_obj
 
 
 def generate_bandit_metadata(labels: List[str], meta: dict, engine: None | Engine):
@@ -106,8 +108,6 @@ def generate_bandit_metadata(labels: List[str], meta: dict, engine: None | Engin
                 )
                 session.add(metadata_obj)
                 session.commit()
-        # TODO: Is this last session.commit really necessary???
-        session.commit()
 
 
 def generate_no_consent(batch_id: int, consent: bool, engine: Engine):
@@ -143,6 +143,7 @@ def generate_parameters(
                 select(Bandit).where(Bandit.label == label)
             ).one()
             arm_params = params[label]
+            print(f"{label}: {arm_params}")
             ## TODO: Is there a way to make this distribution agnostic.
             ## E.g. we could switch from Bernoulli with beta prior to
             ## a Gaussian with a Gaussian prior and the code stays the same?
@@ -154,7 +155,6 @@ def generate_parameters(
             )
             session.add(param_obj)
             session.commit()
-        session.commit()
 
 
 def generate_pi(labels: List[str], batch_id: int, pi: dict, engine: None | Engine):
@@ -233,24 +233,12 @@ def get_bandit(engine) -> List[Bandit]:
     """Retrieve a list of all bandit arms"""
     with Session(engine) as session:
         bandit = session.exec(select(Bandit)).all()
-        out = list()
-        for arm in bandit:
-            out.append(
-                {
-                    "arm": arm,
-                    "parameters": arm.parameters,
-                    "metadata": arm.meta,
-                    "pi": arm.pi,
-                    "responses": arm.responses,
-                }
-            )
-    return out
+    return bandit
 
 
 def get_batch(batch_id: int, engine: Engine):
     """Retrieve a specific Batch"""
     with Session(engine) as session:
-        out = []
         batch = session.exec(select(Batch).where(Batch.id == batch_id)).one()
     return batch
 
@@ -258,23 +246,19 @@ def get_batch(batch_id: int, engine: Engine):
 def get_batches(engine):
     """Retrieve a list of all batch values"""
     with Session(engine) as session:
-        out = []
-        batch = session.exec(select(Batch)).all()
-        for b in batch:
-            out.append({"batch": b, "parameters": b.parameters, "pi": b.pi})
-    return out
+        batches = session.exec(select(Batch)).all()
+    return batches
 
 
 def get_current_batch(engine: Engine, deactivate: bool = False):
     """Get the batch id for the current batch"""
-    print(f"Deactivating: {deactivate}")
     with Session(engine) as session:
         batches = session.exec(
             select(Batch).where(Batch.remaining > 0).where(Batch.active == True)
         ).all()
         # If batch is greater than 1 then there are multiple active batches.
-        # In this case, all batches that are not the most recent (the one with...
-        # the highest value for its id) should be deactivated.
+        # If deactivated == True, all batches that are not the most recent
+        # (the one with the highest value for its id) should be deactivated.
         current_batch: Batch = max(batches, key=lambda x: x.id)
         if len(batches) > 1 and deactivate:
             ids = [batch.id for batch in batches]
@@ -302,20 +286,21 @@ def get_parameters(engine: Engine):
     """Retrieve a list of all bandit arm parameters"""
     with Session(engine) as session:
         params = session.exec(select(Parameters)).all()
-        out = []
-        for param in params:
-            out.append({"parameters": param, "batch": param.batch})
-    return out
+    return params
 
 
 def get_pi(engine):
     """Retrieve a list of all pi values"""
     with Session(engine) as session:
         pi = session.exec(select(Pi)).all()
-        out = []
-        for p in pi:
-            out.append({"pi": p, "batch": p.batch})
-    return out
+    return pi
+
+
+def get_pi_batch(batch_id: int, engine):
+    """Retrieve pi values for a specific batch"""
+    with Session(engine) as session:
+        pi = session.exec(select(Pi).where(Pi.batch_id == batch_id)).all()
+    return pi
 
 
 def get_responses(engine: None | Engine):
@@ -323,6 +308,18 @@ def get_responses(engine: None | Engine):
     with Session(engine) as session:
         responses = session.exec(select(Response)).all()
     return responses
+
+
+def get_response_n(engine, filter: bool = False):
+    """Retrieve the number of responses"""
+    with Session(engine) as session:
+        if filter:
+            responses = session.exec(
+                select(Response).where(Response.garbage is not True)
+            ).all()
+        else:
+            responses = get_responses(engine)
+        return len(responses)
 
 
 def increment_batch(
@@ -333,7 +330,6 @@ def increment_batch(
     labels = []
     params = {}
     for arm in bandit:
-        arm = arm["arm"]
         arm_label = arm.label
         # Construct the labels for each arm
         labels.append(arm_label)
@@ -365,9 +361,9 @@ def increment_batch(
             }
     # Construct updated Pi value for each arm
     pi = draw_arms(params, max=maximum)
-    print(f"{pi}")
+    print(f"Batch: {batch_id}\n{json.dumps(pi, indent=4)}")
     # Now update the `Batch`, `Parameters` and `Pi` tables
-    generate_batch(
+    new_batch = generate_batch(
         labels=labels,
         remaining=remaining,
         active=active,
@@ -375,6 +371,7 @@ def increment_batch(
         params=params,
         engine=engine,
     )
+    return new_batch
 
 
 def is_duplicate_id(prolific_id: str, engine: Engine) -> bool:

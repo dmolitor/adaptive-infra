@@ -22,35 +22,42 @@ print(req.get(base_url).text)
 json_pprint(req.get(base_url + "/bandit").json())
 
 # Print bandit parameters
-json_pprint(req.get(base_url + "/bandit/parameters").json())
+json_pprint(
+    sorted(
+        sorted(
+            req.get(base_url + "/bandit/parameters").json(), key=lambda x: x["arm_id"]
+        ),
+        key=lambda y: y["batch_id"],
+    )
+)
 
 # Print the batch and Pi table
 json_pprint(req.get(base_url + "/bandit/batch").json())
 json_pprint(req.get(base_url + "/bandit/pi").json())
-batches = {
-    x["batch"]["id"]: {
-        "remaining": x["batch"]["remaining"],
-        "active": x["batch"]["active"]
-    }
-    for x in req.get(base_url + "/bandit/batch").json()
-}
+json_pprint(req.get(base_url + "/bandit/pi/batch?batch_id=1").json())
+
+batches = req.get(base_url + "/bandit/batch").json()
 json_pprint(batches)
 
 # Print all responses
 responses = req.get(base_url + "/responses").json()
+json_pprint(responses)
 json_pprint(
     sorted(
         [
             {
                 "id": x["id"],
+                "arm_id": x["arm_id"],
                 "batch": x["batch_id"],
                 "context": x["context_batch_id"],
                 "prolific_id": x["prolific_id"],
-                "garbage": x["garbage"]
+                "discriminated": x["discriminated"],
+                "garbage": x["garbage"],
             }
             for x in responses
+            if not x["garbage"]
         ],
-        key=lambda x: x["batch"]
+        key=lambda x: x["batch"],
     )
 )
 
@@ -63,10 +70,26 @@ json_pprint(req.get(base_url + "/responses/noconsent").json())
 
 # Get the current batch id
 deac = False
-json_pprint(req.get(base_url + f"/bandit/batch/current?deactivate={deac}").json())
+cur_batch = req.get(base_url + f"/bandit/batch/current?deactivate={deac}").json()
+json_pprint(cur_batch)
 
-# Get live summary of responses
+# Assert responses are returned correctly
 responses = pd.DataFrame(req.get(base_url + "/responses").json())
+assert req.get(base_url + "/responses/n").json() == len(responses)
+assert req.get(base_url + "/responses/n?filter=True").json() == len(
+    responses[responses["garbage"] != True]
+)
+
+# Test creation of new batch
+new_batch_req = req.post(
+    base_url + "/bandit/batch",
+    json={"batch_id": cur_batch["id"], "remaining": 1, "maximum": True, "active": True},
+)
+new_batch_req.raise_for_status()
+# Confirm new batch has incremented
+assert new_batch_req.json()["id"] == (cur_batch["id"] + 1)
+
+# Print summary of responses
 responses_noconsent = pd.DataFrame(req.get(base_url + "/responses/noconsent").json())
 perc_discriminated = round(
     responses[responses.garbage != True].discriminated.sum()
