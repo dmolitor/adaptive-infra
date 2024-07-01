@@ -15,8 +15,8 @@ if not args:
 BUFFER = 20
 INSTANCE_TYPE_MASTER = args[0]
 INSTANCE_TYPE_NODE = args[1]
-POSTGRES_VOLUME = args[1]
-SWARM_N = int(args[2])
+POSTGRES_VOLUME = args[2]
+SWARM_N = int(args[3])
 
 base_dir = Path(__file__).resolve().parent.parent
 # For interactive use run the line below
