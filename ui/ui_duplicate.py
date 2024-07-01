@@ -1,5 +1,4 @@
 from shiny import ui
-from utils_prolific import prolific_redirect
 
 """
 This script lays out the UI for the survey exit page.

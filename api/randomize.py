@@ -13,11 +13,8 @@ These steps include:
     - Randomize the order in which context characteristics are shown
 """
 
-## TODO: Discuss, does setting the seed here actually matter/help/harm?
-# Set seed (currently using the random module as well as numpy because
-# numpy introduces type issues when interacting with the database).
-# random.seed(123)
-rng = np.random.default_rng(seed=None)
+# Create random number generator
+rng = np.random.default_rng()
 
 
 def draw_arms(params: dict, max: bool, n_sim: int = int(1e5)) -> dict:

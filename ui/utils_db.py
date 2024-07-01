@@ -13,7 +13,7 @@ To see all the api endpoints utilized here, see `/api/main.py`.
 env_vars = os.environ
 
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
-API_HOST_PORT = env_vars["API_HOST_PORT"]
+API_HOST_PORT = env_vars["API_PORT"]
 STOPPAGE_THRESHOLD = float(env_vars["STOPPAGE_THRESHOLD"])
 STUDY_MAX_N = float(env_vars["STUDY_MAX_N"])
 WARMUP_N = float(env_vars["WARMUP_N"])

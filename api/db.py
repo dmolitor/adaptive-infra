@@ -1,7 +1,7 @@
 import json
 from randomize import draw_arms
 from sqlalchemy import Engine
-from sqlmodel import Session, SQLModel, select
+from sqlmodel import Session, SQLModel, func, select
 from tables import Bandit, Batch, Metadata, NoConsent, Parameters, Pi, Response
 from typing import List
 
@@ -289,6 +289,12 @@ def get_parameters(engine: Engine):
     return params
 
 
+def get_prior_parameters(engine: Engine):
+    """Retrieve a list of all bandit arm prior parameters"""
+    with Session(engine) as session:
+        params = session.exec(select(Parameters).where(Parameters.batch_id == 1)).all()
+    return params
+
 def get_pi(engine):
     """Retrieve a list of all pi values"""
     with Session(engine) as session:
@@ -335,29 +341,27 @@ def increment_batch(
         labels.append(arm_label)
         # Construct updated alpha and beta parameters for each arm
         with Session(engine) as session:
-            arm_params = session.exec(
-                select(Parameters)
-                .where(Parameters.arm_id == arm.id)
-                .where(Parameters.batch_id == batch_id)
-            ).one()
-            arm_batch_responses = session.exec(
-                select(Response)
+            success_count_query = (
+                select(func.count())
+                .select_from(Response)
                 .where(Response.arm_id == arm.id)
-                .where(Response.batch_id == batch_id)
                 .where(Response.garbage != True)
-            ).all()
-            successes = 0
-            failures = 0
+                .where(Response.discriminated == True)
+            )
+            failure_count_query = (
+                select(func.count())
+                .select_from(Response)
+                .where(Response.arm_id == arm.id)
+                .where(Response.garbage != True)
+                .where(Response.discriminated == False)
+            )
+            successes = session.exec(success_count_query).one()
+            failures = session.exec(failure_count_query).one()
             ## TODO: related to the above. Is there a way to update the
             ## posterior distribution in a distribution-agnostic way?
-            for response in arm_batch_responses:
-                if response.discriminated is True:
-                    successes += 1
-                elif response.discriminated is False:
-                    failures += 1
             params[arm_label] = {
-                "alpha": arm_params.alpha + successes,
-                "beta": arm_params.beta + failures,
+                "alpha": successes + 1, 
+                "beta": failures + 1,
             }
     # Construct updated Pi value for each arm
     pi = draw_arms(params, max=maximum)

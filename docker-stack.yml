@@ -10,7 +10,7 @@ services:
       - backend
       - frontend
     ports:
-      - "${API_HOST_PORT}:${API_CONTAINER_PORT}"
+      - "${API_PORT}:${API_PORT}"
   
   app:
     env_file: .env
@@ -20,7 +20,7 @@ services:
     networks:
       - frontend
     ports:
-      - "${APP_HOST_PORT}:${APP_CONTAINER_PORT}"
+      - "${APP_PORT}:${APP_PORT}"
 
   database:
     env_file: .env

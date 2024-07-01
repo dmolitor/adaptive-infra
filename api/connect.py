@@ -12,7 +12,7 @@ env_vars = os.environ
 
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
 DB_PASS = env_vars["POSTGRES_PASSWORD"]
-DB_PORT = int(env_vars["POSTGRES_HOST_PORT"])
+DB_PORT = int(env_vars["POSTGRES_PORT"])
 DB_USER = env_vars["POSTGRES_USER"]
 
 # Creat the db URL and connect via SQLAlchemy/SQLModel
