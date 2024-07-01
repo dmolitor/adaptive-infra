@@ -295,6 +295,7 @@ def get_prior_parameters(engine: Engine):
         params = session.exec(select(Parameters).where(Parameters.batch_id == 1)).all()
     return params
 
+
 def get_pi(engine):
     """Retrieve a list of all pi values"""
     with Session(engine) as session:
@@ -360,7 +361,7 @@ def increment_batch(
             ## TODO: related to the above. Is there a way to update the
             ## posterior distribution in a distribution-agnostic way?
             params[arm_label] = {
-                "alpha": successes + 1, 
+                "alpha": successes + 1,
                 "beta": failures + 1,
             }
     # Construct updated Pi value for each arm

@@ -37,7 +37,7 @@ def connect_ssh(ip: str) -> Connection:
         user="ubuntu",
         connect_kwargs={
             "key_filename": f"{os.path.expanduser('~/.aws')}/{get_key(ec2)}.pem"
-        }
+        },
     )
     con.open()
     if not con.is_connected:
@@ -146,11 +146,11 @@ def server_exists(client, name: str = "AdaptiveServerMaster") -> bool:
 
 
 def launch_instance(
-        client,
-        instance_type: str,
-        instance_n: int,
-        instance_role: str = "Master",
-        verbose: bool = True
+    client,
+    instance_type: str,
+    instance_n: int,
+    instance_role: str = "Master",
+    verbose: bool = True,
 ):
     # Prepping configuration
     if verbose:
@@ -189,10 +189,9 @@ def launch_instance(
     if verbose:
         print(f"Waiting for {instance_role} instance(s) to be healthy ...")
     waiter = client.get_waiter("instance_status_ok")
-    waiter.wait(
-        InstanceIds=instance_ids, WaiterConfig={"Delay": 10, "MaxAttempts": 48}
-    )
+    waiter.wait(InstanceIds=instance_ids, WaiterConfig={"Delay": 10, "MaxAttempts": 48})
     return instance_ids
+
 
 def launch_master_instance(client, verbose: bool = True) -> str:
     adaptive_volume = get_volume_id("AdaptiveVolume", client)
@@ -202,7 +201,7 @@ def launch_master_instance(client, verbose: bool = True) -> str:
         instance_type=INSTANCE_TYPE_MASTER,
         instance_n=1,
         instance_role="Master",
-        verbose=True
+        verbose=True,
     )
     # Attach volume
     attach_response = client.attach_volume(
@@ -226,7 +225,7 @@ def launch_node_instances(client, n: int, verbose: bool = True) -> List[str]:
         instance_type=INSTANCE_TYPE_NODE,
         instance_n=n,
         instance_role="Node",
-        verbose=True
+        verbose=True,
     )
     return instance_ids
 
@@ -295,17 +294,13 @@ def launch_swarm(master_id: str, node_ids: List[str], client) -> None:
     master_con.put(base_dir / "scripts" / "swarm-launch-aws.sh", target_dir)
     master_con.put(base_dir / ".env", target_dir)
     # Initialize swarm
-    swarm_command = (
-        re
-        .search(
-            r"docker swarm join --token \S+ \S+",
-            master_con.run(
-                "sudo docker swarm init --force-new-cluster "
-                + f"--advertise-addr {master_ip}"
-            ).stdout.strip()
-        )
-        .group(0)
-    )
+    swarm_command = re.search(
+        r"docker swarm join --token \S+ \S+",
+        master_con.run(
+            "sudo docker swarm init --force-new-cluster "
+            + f"--advertise-addr {master_ip}"
+        ).stdout.strip(),
+    ).group(0)
     # Execute the script
     master_con.run("sudo /bin/bash swarm-launch-aws.sh")
     # Connect all node instances to master instance
@@ -344,5 +339,5 @@ if __name__ == "__main__":
             launch_swarm(master_id, node_ids, ec2)
         except Exception:
             print(traceback.format_exc())
-            response = ec2.terminate_instances(InstanceIds=[master_id]+node_ids)
+            response = ec2.terminate_instances(InstanceIds=[master_id] + node_ids)
             check_http_status(response)

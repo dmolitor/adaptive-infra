@@ -60,7 +60,7 @@ def make_security_group(client, name: str = "AdaptiveExperiment") -> bool:
                 "IpProtocol": "tcp",
                 "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
                 "ToPort": 2377,
-            }
+            },
         ],
     )
     check_http_status(ip_response)
