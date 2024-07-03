@@ -322,7 +322,7 @@ def get_response_n(engine, filter: bool = False):
     with Session(engine) as session:
         if filter:
             responses = session.exec(
-                select(Response).where(Response.garbage is not True)
+                select(Response).where(Response.garbage != True)
             ).all()
         else:
             responses = get_responses(engine)
