@@ -297,20 +297,25 @@ def launch_swarm(master_id: str, node_ids: List[str], client) -> None:
     swarm_command = re.search(
         r"docker swarm join --token \S+ \S+",
         master_con.run(
-            "sudo docker swarm init --force-new-cluster "
+            "sudo docker swarm init "
+            + "--force-new-cluster "
             + f"--advertise-addr {master_ip}"
         ).stdout.strip(),
     ).group(0)
-    # Execute the script
+    # Launch swarm
     master_con.run("sudo /bin/bash swarm-launch-aws.sh")
-    # Connect all node instances to master instance
+    print("Preparing to add worker nodes ...")
+    time.sleep(15)
+    # Add worker nodes to swarm
     for node_ip in node_ips:
         print(f"Node: {node_ip}")
         node_con = connect_ssh(ip=node_ip)
-        node_con.run("sudo " + swarm_command)
+        node_con.run(f"sudo {swarm_command} --advertise-addr {node_ip}")
         node_con.close()
+    print("Waiting for swarm to stabilize ...")
+    time.sleep(60)
     # Scale up the swarm
-    master_con.run(f"sudo docker service scale adaptive_stack_app={SWARM_N}")
+    master_con.run(f"sudo docker service scale adaptive_stack_app={SWARM_N + 1}")
     master_con.close()
 
 
@@ -329,7 +334,7 @@ if __name__ == "__main__":
         print(f"Volume attached. Buffering for {BUFFER} seconds")
         time.sleep(BUFFER)
         # Launch fleet of node instances
-        node_ids = launch_node_instances(ec2, n=1)
+        node_ids = launch_node_instances(ec2, n=SWARM_N)
         try:
             # Mount the volume
             print("Mounting volume to Master instance")

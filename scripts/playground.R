@@ -29,30 +29,10 @@ garbage <- responses |>
 cur_batch_req <- GET(paste0(base_url, "/bandit/batch/current?deactivate=False"))
 cur_batch <- content(stop_for_status(cur_batch_req))$id
 
-batch_req <- GET(paste0(base_url, "/bandit/batch"))
-batch <- content(stop_for_status(batch_req))
+param_req <- GET(paste0(base_url, "/bandit/parameters"))
+params <- content(stop_for_status(param_req)) |> bind_rows()
 
-pi_values <- bind_rows(
-  lapply(
-    batch,
-    \(x) {
-      batch_id = x[["batch"]][["id"]]
-      parameters <- lapply(
-        x[["parameters"]],
-        \(y) {
-          list(
-            "arm_id" = y[["arm_id"]],
-            "alpha" = y[["alpha"]],
-            "beta" = y[["beta"]]
-          )
-        }
-      )
-      return(bind_rows(parameters) |> mutate(batch_id = batch_id))
-    }
-  )
-)
-
-pi_values_latest <- pi_values |>
+params_latest <- params |>
   filter(batch_id == max(batch_id)) |>
   arrange(desc(arm_id)) |>
   rowwise() |>
@@ -64,7 +44,7 @@ pi_values_latest <- pi_values |>
   )
 
 ggplot(
-  pi_values_latest,
+  params_latest,
   aes(x = support, y = pr, color = factor(arm_id), group = arm_id)) +
   geom_line() +
   scale_color_manual(values = c(

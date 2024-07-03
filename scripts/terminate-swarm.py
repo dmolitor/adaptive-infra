@@ -1,4 +1,5 @@
 import boto3
+from typing import List
 
 
 def check_http_status(response: dict) -> None:
@@ -9,9 +10,12 @@ def check_http_status(response: dict) -> None:
     return None
 
 
-def running_image_ids(client, name: str = "AdaptiveServer") -> list[str]:
+def running_image_ids(
+    client,
+    names: List[str] = ["AdaptiveServerMaster", "AdaptiveServerNode"]
+) -> List[str]:
     response = client.describe_instances(
-        Filters=[{"Name": "tag:Name", "Values": [name]}]
+        Filters=[{"Name": "tag:Name", "Values": names}]
     )
     check_http_status(response)
     reservations = response.get("Reservations")
