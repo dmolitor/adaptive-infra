@@ -56,38 +56,6 @@ def current_batch(deactivate: bool = False):
     return current_batch
 
 
-@with_retry
-def current_context(batch_id: int):
-    """Retrieves (randomly) the context for the current user session"""
-    context_request = req.get(api_url + f"/randomize?batch_id={batch_id}")
-    context_request.raise_for_status()
-    context = context_request.json()
-    return context
-
-
-def current_pi():
-    """Retrieves the current-batch individual pi values"""
-    cur_batch = current_batch()
-    cur_batch_id = cur_batch["id"]
-    resp = req.get(api_url + f"/bandit/pi/batch?batch_id={cur_batch_id}")
-    resp.raise_for_status()
-    pi_vals = [x["pi"] for x in sorted(resp.json(), key=lambda x: x["arm_id"])]
-    for i in range(len(pi_vals) - 1, 0, -1):
-        pi_vals[i] = pi_vals[i] - pi_vals[(i - 1)]
-    return pi_vals
-
-
-def decrement_batch_remaining(batch_id: int, active: bool = True):
-    """Decrement the batch `remaining` parameter. Can also deactivate batch"""
-    (
-        req.post(
-            api_url
-            + f"/bandit/batch/decrement?batch_id={str(batch_id)}"
-            + f"&active={active}"
-        ).raise_for_status()
-    )
-
-
 def finished_warmup() -> True:
     """Is the warmup phase of the survey completed"""
     if num_responses() >= WARMUP_N:
@@ -97,7 +65,7 @@ def finished_warmup() -> True:
 
 @with_retry
 def get_batch_id(batch_id: int):
-    """Get specific batch"""
+    """Get a specific batch"""
     batch_request = req.get(api_url + f"/bandit/batch?batch_id={str(batch_id)}")
     batch_request.raise_for_status()
     batch = batch_request.json()
@@ -193,30 +161,6 @@ def submit_response_noconsent(form: dict) -> None:
     for key in ["batch_id", "consent"]:
         resp_form[key] = form[key]
     req.post(url, json=resp_form).raise_for_status()
-
-
-def update_batch(batch_id: int, remaining: int, maximum: bool):
-    """
-    Decrement batch counter, and create new batch/pi/parameters as necessary.
-    Also check if any arm exceeds the stoppage threshold. If so, pause the
-    Prolific survey.
-    """
-    batch = get_batch_id(batch_id)
-    ready_to_update = batch["remaining"] <= 1
-    batch_is_active = batch["active"]
-    if ready_to_update and batch_is_active:
-        decrement_batch_remaining(batch["id"], active=False)
-        increment_batch(batch["id"], remaining=remaining, maximum=maximum)
-        # Check if any of the new arm pi values exceed stoppage threshold
-        pi_vals = current_pi()
-        print(f"Batch: {batch_id}\nPi: {[round(x, 3) for x in pi_vals]}")
-        # If any pi values exceed stoppage threshold
-        if any([x >= STOPPAGE_THRESHOLD for x in pi_vals]):
-            pause_prolific_study()
-    elif ready_to_update and not batch_is_active:
-        decrement_batch_remaining(batch["id"], active=False)
-    else:
-        decrement_batch_remaining(batch["id"])
 
 
 def user_batch(batch_id: int | None = None, remaining: int = 1, maximum: bool = True):

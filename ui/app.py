@@ -11,7 +11,7 @@ from ui_no_consent import no_consent_ui
 from ui_outro import outro_ui
 from ui_postsurvey import attention_ui
 from ui_survey import survey_ui
-from utils_db import current_batch, current_context, submit, user_batch, user_context
+from utils_db import submit, user_batch, user_context
 from utils_prolific import prolific_redirect
 from utils_ui import (
     empty_age,
@@ -123,9 +123,7 @@ def server(input: Inputs, output: Outputs, session: Session):
             # Update the response form
             response_form.consent = False
             # Submit the response form and handle batch/parameter updating
-            # Get the current batch
-            cur_batch = current_batch(deactivate=True)
-            response_form.batch_id = cur_batch["id"]
+            response_form.batch_id = batch["id"]
             submit(response_form=response_form, noconsent=True)
             # Redirect to the Prolific No-Consent page
             await session.send_custom_message(

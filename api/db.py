@@ -358,8 +358,6 @@ def increment_batch(
             )
             successes = session.exec(success_count_query).one()
             failures = session.exec(failure_count_query).one()
-            ## TODO: related to the above. Is there a way to update the
-            ## posterior distribution in a distribution-agnostic way?
             params[arm_label] = {
                 "alpha": successes + 1,
                 "beta": failures + 1,

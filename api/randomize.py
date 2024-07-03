@@ -36,7 +36,6 @@ def draw_arms(params: dict, max: bool, n_sim: int = int(1e5)) -> dict:
     ```
     """
     array_list = []
-    ## TODO: same complaint. Want to make this distribution agnostic.
     for value in params.values():
         # For each arm generate `n_sim` draws from the posterior beta dist.
         array_list.append(rng.beta(a=value["alpha"], b=value["beta"], size=n_sim))
