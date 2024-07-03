@@ -14,11 +14,14 @@ from db import (
     get_no_consent,
     get_parameters,
     get_pi,
+    get_pi_batch,
     get_responses,
+    get_response_n,
     increment_batch,
     is_duplicate_id,
 )
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from randomize import html_format, randomize
 from response_models import BanditJSON, BatchJSON, NoConsentJSON, ResponseJSON
 
@@ -31,6 +34,16 @@ endpoint, look at the corresponding functions in `db.py`.
 
 # Create the API
 api = FastAPI()
+
+# Configure CORS
+origins = ["*"]
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Base endpoint to check if it's alive.
@@ -80,6 +93,13 @@ def response_gen(response: ResponseJSON):
         engine=engine,
     )
     return True
+
+
+# Endpoint to get the number of responses
+@api.get("/responses/n")
+def response_n(filter: bool = False):
+    n = get_response_n(engine, filter)
+    return n
 
 
 # Endpoint to send responses with no consent to
@@ -161,6 +181,13 @@ def bandit_pi():
     return pi
 
 
+# Endpoint to retrieve Pi values for a specific batch
+@api.get("/bandit/pi/batch")
+def bandit_pi_batch(batch_id: str):
+    pi = get_pi_batch(batch_id, engine)
+    return pi
+
+
 # Endpoints for working with Batches --------------------------------------
 
 
@@ -196,10 +223,10 @@ def increment_bandit_batch(batch: BatchJSON):
     batch_remaining = batch.remaining
     batch_active = batch.active
     batch_max = batch.maximum
-    increment_batch(
+    new_batch = increment_batch(
         batch_id, batch_remaining, batch_active, maximum=batch_max, engine=engine
     )
-    return True
+    return new_batch
 
 
 # Endpoint to decrement the `remaining` parameter of a batch

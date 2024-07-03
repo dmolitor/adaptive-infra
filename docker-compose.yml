@@ -18,7 +18,7 @@ services:
       - backend
       - frontend
     ports:
-      - "${API_CONTAINER_PORT}:${API_HOST_PORT}"
+      - "${API_PORT}:${API_PORT}"
     develop:
       watch:
         - action: sync+restart
@@ -43,7 +43,7 @@ services:
     networks:
       - frontend
     ports:
-      - "${APP_CONTAINER_PORT}:${APP_HOST_PORT}"
+      - "${APP_PORT}:${APP_PORT}"
     develop:
       watch:
         - action: sync+restart

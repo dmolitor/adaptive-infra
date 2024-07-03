@@ -1,5 +1,6 @@
 import requests as req
 import os
+from shiny import ui
 import time
 import traceback
 from utils_prolific import pause_prolific_study
@@ -12,7 +13,7 @@ To see all the api endpoints utilized here, see `/api/main.py`.
 env_vars = os.environ
 
 ADAPTIVE_TESTING = env_vars.get("ADAPTIVE_TESTING")
-API_HOST_PORT = env_vars["API_HOST_PORT"]
+API_HOST_PORT = env_vars["API_PORT"]
 STOPPAGE_THRESHOLD = float(env_vars["STOPPAGE_THRESHOLD"])
 STUDY_MAX_N = float(env_vars["STUDY_MAX_N"])
 WARMUP_N = float(env_vars["WARMUP_N"])
@@ -55,49 +56,16 @@ def current_batch(deactivate: bool = False):
     return current_batch
 
 
-@with_retry
-def current_context(batch_id: int):
-    """Retrieves (randomly) the context for the current user session"""
-    context_request = req.get(api_url + f"/randomize?batch_id={batch_id}")
-    context_request.raise_for_status()
-    context = context_request.json()
-    ## TODO: Remove this at some point (currently helpful for interactive use)
-    print(f"context:\n{context}")
-    return context
-
-
-def current_pi():
-    """Retrieves the current-batch individual pi values"""
-    cur_batch = current_batch()
-    resp = req.get(api_url + "/bandit/batch")
-    resp.raise_for_status()
-    [cur_params] = [x for x in resp.json() if x["batch"]["id"] == cur_batch["id"]]
-    pi_vals = [x["pi"] for x in cur_params["pi"]]
-    for i in range(len(pi_vals) - 1, 0, -1):
-        pi_vals[i] = pi_vals[i] - pi_vals[(i - 1)]
-    return pi_vals
-
-
-def decrement_batch_remaining(batch_id: int, active: bool = True):
-    """Decrement the batch `remaining` parameter. Can also deactivate batch"""
-    (
-        req.post(
-            api_url
-            + f"/bandit/batch/decrement?batch_id={str(batch_id)}"
-            + f"&active={active}"
-        ).raise_for_status()
-    )
-
-
 def finished_warmup() -> True:
-    if num_responses() > WARMUP_N:
+    """Is the warmup phase of the survey completed"""
+    if num_responses() >= WARMUP_N:
         return True
     return False
 
 
 @with_retry
 def get_batch_id(batch_id: int):
-    """Get specific batch"""
+    """Get a specific batch"""
     batch_request = req.get(api_url + f"/bandit/batch?batch_id={str(batch_id)}")
     batch_request.raise_for_status()
     batch = batch_request.json()
@@ -108,17 +76,17 @@ def increment_batch(
     batch_id: int, remaining: int, active: bool = True, maximum: bool = True
 ):
     """Ping the api to create a new batch in the Batch database table"""
-    (
-        req.post(
-            api_url + "/bandit/batch",
-            json={
-                "batch_id": batch_id,
-                "remaining": remaining,
-                "active": active,
-                "maximum": maximum,
-            },
-        ).raise_for_status()
+    new_batch_req = req.post(
+        api_url + "/bandit/batch",
+        json={
+            "batch_id": batch_id,
+            "remaining": remaining,
+            "active": active,
+            "maximum": maximum,
+        },
     )
+    new_batch_req.raise_for_status()
+    return new_batch_req.json()
 
 
 def initialize_bandit(bandit: dict) -> None:
@@ -130,6 +98,14 @@ def initialize_bandit(bandit: dict) -> None:
 
 
 @with_retry
+def is_alive() -> bool:
+    """Checks if api is alive"""
+    resp = req.get(api_url)
+    resp.raise_for_status()
+    return True
+
+
+@with_retry
 def is_duplicate_id(prolific_id: str) -> bool:
     """Checks if user response already exists"""
     resp = req.post(api_url + f"/responses/duplicated?prolific_id={prolific_id}")
@@ -138,17 +114,14 @@ def is_duplicate_id(prolific_id: str) -> bool:
 
 
 @with_retry
-def num_responses() -> int:
-    resp_request = req.get(api_url + "/responses")
-    resp_request.raise_for_status()
-    return len(resp_request.json())
+def num_responses(filter: bool = False) -> int:
+    resp = req.get(api_url + f"/responses/n?filter={filter}")
+    resp.raise_for_status()
+    return resp.json()
 
 
 def submit(
     response_form,
-    batch_id: int | None,
-    batch_size: int | None,
-    maximum: bool | None,
     noconsent: bool = False,
 ) -> None:
     """
@@ -160,6 +133,7 @@ def submit(
     duplicate_response = is_duplicate_id(response_form.prolific_id)
     # If the response is a duplicate we just want to do nothing.
     if duplicate_response:
+        ui.update_navs("hidden_tabs", selected="panel_duplicate")
         return None
     response_form.validate_data()
     response_form_data = response_form.generate_form()
@@ -167,10 +141,6 @@ def submit(
         submit_response_noconsent(response_form_data)
     else:
         submit_response(response_form_data)
-    # Update batches and corresponding parameters if the form is valid
-    # and if we have ended the warm-up phase of receiving responses
-    if not response_form.garbage and finished_warmup():
-        update_batch(batch_id, batch_size, maximum=maximum)
     # If we have exceeded the max number of survey responses, pause the
     # Prolific study
     if num_responses() >= STUDY_MAX_N:
@@ -193,25 +163,24 @@ def submit_response_noconsent(form: dict) -> None:
     req.post(url, json=resp_form).raise_for_status()
 
 
-def update_batch(batch_id: int, remaining: int, maximum: bool):
-    """
-    Decrement batch counter, and create new batch/pi/parameters as necessary.
-    Also check if any arm exceeds the stoppage threshold. If so, pause the
-    Prolific survey.
-    """
-    batch = get_batch_id(batch_id)
-    ready_to_update = batch["remaining"] <= 1
-    batch_is_active = batch["active"]
-    if ready_to_update and batch_is_active:
-        decrement_batch_remaining(batch["id"], active=False)
-        increment_batch(batch["id"], remaining=remaining, maximum=maximum)
-        # Check if any of the new arm pi values exceed stoppage threshold
-        pi_vals = current_pi()
-        print(f"Current pi vals: {pi_vals}")
-        # If any pi values exceed stoppage threshold
-        if any([x >= STOPPAGE_THRESHOLD for x in pi_vals]):
-            pause_prolific_study()
-    elif ready_to_update and not batch_is_active:
-        decrement_batch_remaining(batch["id"], active=False)
+def user_batch(batch_id: int | None = None, remaining: int = 1, maximum: bool = True):
+    """Returns the batch information for a new user"""
+    if not finished_warmup():
+        batch = get_batch_id(batch_id=1)
     else:
-        decrement_batch_remaining(batch["id"])
+        if batch_id is None:
+            batch_id = current_batch(deactivate=True)["id"]
+        if remaining > 1:
+            raise ValueError("Currently only batch sizes of 1 are supported")
+        batch = increment_batch(
+            batch_id=batch_id, remaining=remaining, active=True, maximum=maximum
+        )
+    return batch
+
+
+def user_context(batch_id: int):
+    """Retrieves (randomly) the context for the current user session"""
+    context_request = req.get(api_url + f"/randomize?batch_id={batch_id}")
+    context_request.raise_for_status()
+    context = context_request.json()
+    return context

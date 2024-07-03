@@ -1,6 +1,7 @@
 set dotenv-load := true
 
-instance_type := env_var('AWS_INSTANCE_TYPE')
+instance_type_master := env_var('INSTANCE_TYPE_MASTER')
+instance_type_node := env_var('INSTANCE_TYPE_NODE')
 postgres_volume := env_var('POSTGRES_VOLUME')
 swarm_n := env_var('AWS_SWARM_N')
 prolific_token := env_var('PROLIFIC_TOKEN')
@@ -23,7 +24,7 @@ aws-security-group: aws-sso-login
 
 # Launch a Docker Swarm on an AWS EC2 server
 aws-swarm-launch: aws-ami-build aws-security-group aws-volume
-  {{python}} {{justfile_directory()}}/scripts/deploy-swarm.py {{instance_type}} {{postgres_volume}} {{swarm_n}}
+  {{python}} {{justfile_directory()}}/scripts/deploy-swarm.py {{instance_type_master}} {{instance_type_node}} {{postgres_volume}} {{swarm_n}}
 
 # Terminate any active Docker Swarm AWS server
 aws-swarm-terminate: aws-sso-login

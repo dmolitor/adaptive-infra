@@ -9,6 +9,6 @@ WORKDIR /api
 
 COPY ./ /api/
 
-EXPOSE ${API_CONTAINER_PORT}
+EXPOSE ${API_PORT}
 
-CMD uvicorn main:api --host 0.0.0.0 --port ${API_CONTAINER_PORT}
+CMD uvicorn main:api --host 0.0.0.0 --port ${API_PORT}

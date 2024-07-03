@@ -13,11 +13,8 @@ These steps include:
     - Randomize the order in which context characteristics are shown
 """
 
-## TODO: Discuss, does setting the seed here actually matter/help/harm?
-# Set seed (currently using the random module as well as numpy because
-# numpy introduces type issues when interacting with the database).
-# random.seed(123)
-rng = np.random.default_rng(seed=None)
+# Create random number generator
+rng = np.random.default_rng()
 
 
 def draw_arms(params: dict, max: bool, n_sim: int = int(1e5)) -> dict:
@@ -39,7 +36,6 @@ def draw_arms(params: dict, max: bool, n_sim: int = int(1e5)) -> dict:
     ```
     """
     array_list = []
-    ## TODO: same complaint. Want to make this distribution agnostic.
     for value in params.values():
         # For each arm generate `n_sim` draws from the posterior beta dist.
         array_list.append(rng.beta(a=value["alpha"], b=value["beta"], size=n_sim))
@@ -131,7 +127,6 @@ def randomize(batch_id: int, engine: Engine) -> dict:
 def randomize_context(batch_id: int, engine: Engine) -> int:
     """Randomize which bandit arm is shown to the user"""
     runif = float(rng.uniform(low=0.0, high=1.0, size=1)[0])
-    print(f"runif: {runif}")
     with Session(engine) as session:
         batch = session.exec(select(Batch).where(Batch.id == batch_id)).one()
         batch_pi = [pi.model_dump() for pi in batch.pi]

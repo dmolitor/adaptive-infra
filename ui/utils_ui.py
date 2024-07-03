@@ -1,7 +1,6 @@
-import requests as req
 from shiny import Session, ui
 from urllib.parse import urlparse, parse_qs
-from utils_db import api_url, is_duplicate_id
+from utils_db import is_duplicate_id
 
 """
 This script defines utility functions for interacting with the user interface.
