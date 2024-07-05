@@ -21,6 +21,9 @@ print(req.get(base_url).text)
 # Retrieve the bandit table
 json_pprint(req.get(base_url + "/bandit").json())
 
+# Retrieve metadata table
+json_pprint(req.get(base_url + "/bandit/metadata").json())
+
 # Print bandit parameters
 json_pprint(
     sorted(
