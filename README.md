@@ -87,7 +87,7 @@ just docker-build-and-push
 
 ### Adaptive experiment
 
-To deploy the adaptive experiment to an AWS server:
+To deploy the adaptive experiment to an AWS cluster orchestrated with Docker Swarm:
 ```shell
 just deploy
 ```
