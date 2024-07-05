@@ -87,12 +87,12 @@ just docker-build-and-push
 
 ### Adaptive experiment
 
-To deploy the adaptive experiment to an AWS cluster orchestrated with Docker Swarm:
+To deploy the adaptive experiment to an AWS cluster orchestrated by Docker Swarm:
 ```shell
 just deploy
 ```
 
-To terminate the running AWS server:
+To terminate the running AWS cluster:
 ```shell
 just terminate
 ```
