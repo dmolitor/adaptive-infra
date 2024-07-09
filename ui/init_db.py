@@ -24,19 +24,19 @@ else:
 meta_generator = {
     "prior_trips": [
         [
-            "Has visited once for vacation",
-            "Two trips, both during the holidays",
+            "Has traveled to the U.S. every other summer since childhood",
+            "Has visited the U.S. many times as a tourist",
         ]
     ],
     "education": [["College degree", "No formal education"]],
     "reason": [
         [
-            "Seeking better employment opportunities",
-            "Greater access to high-paying jobs",
+            "Escaping political/religious persecution",
+            "Escalating violence in home country",
         ],
     ],
-    "origin": [["Sudan", "Somalia"]],
-    "profession": [["Waiter", "Janitor"]]
+    "origin": [["Poland", "Germany"]],
+    "profession": [["Information Technology Specialist", "Construction Worker"]]
 }
 
 # Create all possible metadata combinations
