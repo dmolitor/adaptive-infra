@@ -1,5 +1,5 @@
 # adaptive-infra
-Want to host a survey but need it to be highly customized, able to change its behavior in a data-adaptive manner,
+Want to host a survey but need it to be highly customizable, able to change its behavior in a data-adaptive manner,
 and scalable (to a reasonable degree)? This repo shows how to build such a survey using 
 [Shiny for Python](https://shiny.posit.co/py/) and deploying/scaling it via AWS and 
 [Docker Swarm](https://docs.docker.com/engine/swarm/). This architecture is a part of a larger project
