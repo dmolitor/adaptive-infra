@@ -1,5 +1,10 @@
 # adaptive-infra
-Infrastructure for adaptive learning with surveys and experiments.
+Want to host a survey but need it to be highly customized, able to change its behavior in a data-adaptive manner,
+and scalable (to a reasonable degree)? This repo shows how to build such a survey using 
+[Shiny for Python](https://shiny.posit.co/py/) and deploying/scaling it via AWS and 
+[Docker Swarm](https://docs.docker.com/engine/swarm/). This architecture is a part of a larger project
+demonstrating how researchers can use data-adaptive methods to detect discrimination in experimental settings more
+efficiently than standard methods (randomized experiments and conjoint analyses).
 
 ## Requirements
 - [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
