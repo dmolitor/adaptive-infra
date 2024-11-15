@@ -132,3 +132,21 @@ print(
     + "Respondent race:\n"
     + f"{race}\n"
 )
+
+# Output tables
+bandit = pd.DataFrame(req.get(base_url + "/bandit").json())
+batch = pd.DataFrame(req.get(base_url + "/bandit/batch").json())
+metadata = pd.DataFrame(req.get(base_url + "/bandit/metadata").json())
+noconsent = pd.DataFrame(req.get(base_url + "/responses/noconsent").json())
+parameters = pd.DataFrame(req.get(base_url + "/bandit/parameters").json())
+pi = pd.DataFrame(req.get(base_url + "/bandit/pi").json())
+response = pd.DataFrame(req.get(base_url + "/responses").json())
+
+dir_path = ""
+bandit.to_csv(dir_path + "bandit.csv", index=False)
+batch.to_csv(dir_path + "batch.csv", index=False)
+metadata.to_csv(dir_path + "metadata.csv", index=False)
+noconsent.to_csv(dir_path + "noconsent.csv", index=False)
+parameters.to_csv(dir_path + "parameters.csv", index=False)
+pi.to_csv(dir_path + "pi.csv", index=False)
+response.to_csv(dir_path + "response.csv", index=False)
