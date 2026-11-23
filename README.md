@@ -2,10 +2,9 @@
 Want to host a survey but need it to be highly customizable, able to change its behavior in a data-adaptive manner,
 and scalable (to a reasonable degree)? This repo shows how to build such a survey using 
 [Shiny for Python](https://shiny.posit.co/py/) and deploying/scaling it via AWS and 
-[Docker Swarm](https://docs.docker.com/engine/swarm/). This architecture is a part of a 
-[larger project](https://doi.org/10.17605/OSF.IO/CTD54)
-demonstrating how researchers can use data-adaptive methods to detect discrimination in experimental settings more
-efficiently than standard methods (randomized experiments and conjoint analyses).
+[Docker Swarm](https://docs.docker.com/engine/swarm/). This architecture was developed as part of a 
+[larger project](https://doi.org/10.1017/pan.2026.10040) proposing adaptive randomization for
+conjoint experiments, and was the software we used to deploy our adaptively-randomized experiment (via Prolific).
 
 ## Requirements
 - [AWS CLI v2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
